@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "builds": [ 
+    { "src": "*.html", "use": "@vercel/static" },   
+    { "src": "api/*.py", "use": "@vercel/python" }  
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/index.py" },
+    { "src": "/(.*)", "status": 404, "dest": "/404.html" }
+  ]
+}
