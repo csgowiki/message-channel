@@ -9,7 +9,3 @@ app = Flask(__name__)
 def hello_world(path):
     return Response("<h1>Flask</h1><p>You visited: /%s</p>"
                         % (path), mimetype="text/html")
-
-
-if __name__ == '__main__':
-    app.run()
