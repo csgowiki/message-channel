@@ -4,7 +4,7 @@
     { "src": "api/*.py", "use": "@vercel/python" }  
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "api/index.py" },
+    { "src": "/api/direct_channel", "dest": "api/direct_view.py" },
     { "src": "/(.*)", "status": 404, "dest": "404.html" }
   ]
 }
