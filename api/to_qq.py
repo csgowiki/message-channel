@@ -22,7 +22,7 @@ def decode_monitor_str(sv_remark: str, message: str) -> str:
     return msg
 
 
-@app.route('/api/direct_channel', methods=['POST'])
+@app.route('/api/to_qq', methods=['POST'])
 def direct_view():
     try:
         token = os.getenv('ACCESS_TOKEN')
