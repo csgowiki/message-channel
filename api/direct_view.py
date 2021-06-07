@@ -29,7 +29,3 @@ def hello_world(path):
         return jsonify({"status": "ok"})
     except Exception as ept:
         return jsonify({"status": "error", "message": ept})
-
-
-if __name__ == '__main__':
-    app.run()
