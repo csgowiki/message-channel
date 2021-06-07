@@ -6,8 +6,8 @@ from flask import Flask, request, jsonify
 app = Flask(__name__)
 
 
-@app.route('/direct_channel', methods=['POST'])
-def hello_world(path):
+@app.route('/api/direct_channel', methods=['POST'])
+def hello_world():
     resp = request.get_json()
     try:
         token = os.getenv('ACCESS_TOKEN')
