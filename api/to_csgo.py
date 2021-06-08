@@ -29,11 +29,15 @@ def dump_container(container: dict) -> bool:
     except:
         return False
 
-def send_tcp_package(sv_host, sv_port, message):
+def send_tcp_package(sv_host, sv_port, sender, message, msg_type):
     socket.setdefaulttimeout(3)
     client = socket.socket()
     client.connect((sv_host, int(sv_port)))
-    client.send(message.encode('utf-8'))
+    client.send(ujson.dumps({
+        "sender": sender,
+        "message": message,
+        "msg_type": int(msg_type)
+    }).encode('utf-8'))
     client.close()
 
 @app.route('/api/to_csgo', methods=['POST'])
@@ -49,7 +53,9 @@ def to_csgo_view():
                 send_tcp_package(
                     socket_container[qq_group][value_idx][1],
                     socket_container[qq_group][value_idx][2],
-                    f"[{nickname}] {message}"
+                    nickname,
+                    message,
+                    0
                 )
                 socket_container[qq_group][value_idx][3] = time.time()
                 dump_container(socket_container)
