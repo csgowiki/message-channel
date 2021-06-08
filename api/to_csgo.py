@@ -42,15 +42,17 @@ def to_csgo_view():
     qq_group = request.form.get("qq_group")
     nickname = request.form.get("sender")
     message = request.form.get("message")
-    
+
     if qq_group in list(socket_container.keys()):
         for value_idx in range(len(socket_container[qq_group])):
             try:
                 send_tcp_package(
-                    socket_container[qq_group][value_idx][1], 
-                    socket_container[qq_group][value_idx][2], 
+                    socket_container[qq_group][value_idx][1],
+                    socket_container[qq_group][value_idx][2],
                     f"[{nickname}] {message}"
-                )       
+                )
+                socket_container[qq_group][value_idx][3] = time.time()
+                dump_container(socket_container)
             except Exception as ept:
                 del socket_container[qq_group][value_idx]
                 if len(socket_container[qq_group]) == 0:
