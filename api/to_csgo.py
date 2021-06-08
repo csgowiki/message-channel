@@ -46,6 +46,11 @@ def to_csgo_view():
     qq_group = request.form.get("qq_group")
     nickname = request.form.get("sender")
     message = request.form.get("message")
+    if len(qq_group) == 0:
+        return jsonify({
+            "status": "error",
+            "message": "qqgroup empty"
+        })
 
     if qq_group in list(socket_container.keys()):
         for value_idx in range(len(socket_container[qq_group])):
@@ -77,6 +82,11 @@ def connect_tcp():
     sv_host = request.form.get("sv_host")
     sv_port = request.form.get("sv_port")
     qq_group = request.form.get("qq_group")
+    if len(qq_group) == 0:
+        return jsonify({
+            "status": "error",
+            "message": "qqgroup empty"
+        })
 
     success = False
     if qq_group in socket_container.keys():
@@ -110,6 +120,11 @@ def close_tcp():
     sv_remark = request.form.get("sv_remark")
     sv_host = request.form.get("sv_host")
     qq_group = request.form.get("qq_group")
+    if len(qq_group) == 0:
+        return jsonify({
+            "status": "error",
+            "message": "qqgroup empty"
+        })
 
     if qq_group in list(socket_container.keys()):
         success = False

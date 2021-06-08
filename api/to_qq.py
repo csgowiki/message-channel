@@ -32,6 +32,7 @@ def direct_view():
         sender = request.form.get('sender')
         message = request.form.get('message')
         msg_type = int(request.form.get('msg_type'))
+        assert len(qq_group) != 0
 
         assert qq_group == '874734861'
         if msg_type == 0:
