@@ -34,22 +34,23 @@ def connect_tcp():
     socket_container = load_container()
     sv_remark = request.form.get("sv_remark")
     sv_host = request.form.get("sv_host")
+    sv_port = request.form.get("sv_port")
     qq_group = request.form.get("qq_group")
 
     success = False
     if qq_group in socket_container.keys():
         for value_idx in range(len(socket_container[qq_group])):
             if socket_container[qq_group][value_idx][:2] == [sv_remark, sv_host]:
-                socket_container[qq_group][value_idx] = [sv_remark, sv_host, time.time()]
+                socket_container[qq_group][value_idx] = [sv_remark, sv_host, sv_port, time.time()]
                 dump_container(socket_container)
                 return jsonify({
                     "status": "warning",
                     "message": "tcp connect exist"
                 })
-        socket_container[qq_group].append([sv_remark, sv_host, time.time()])
+        socket_container[qq_group].append([sv_remark, sv_host, sv_port, time.time()])
         success = True
     else:
-        socket_container[qq_group] = [[sv_remark, sv_host, time.time()]]
+        socket_container[qq_group] = [[sv_remark, sv_host, sv_port, time.time()]]
         success = True
 
     if success:
@@ -121,7 +122,7 @@ def socket_refresh():
         if len(socket_container[mykey]) == 0:
             continue
         for myvalue_idx in range(len(socket_container[mykey])):
-            if time.time() - float(socket_container[mykey][myvalue_idx][2]) >= 24 * 60 * 60:
+            if time.time() - float(socket_container[mykey][myvalue_idx][3]) >= 24 * 60 * 60:
                 del socket_container[mykey][myvalue_idx]
         if len(socket_container[mykey]) == 0:
             socket_container.pop(mykey)
@@ -132,6 +133,3 @@ def socket_refresh():
         "old_session": old_socket_container,
         "new_session": socket_container
     })
-
-
-app.run()
