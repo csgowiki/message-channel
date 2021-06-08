@@ -46,6 +46,7 @@ def to_csgo_view():
     qq_group = request.form.get("qq_group")
     nickname = request.form.get("sender")
     message = request.form.get("message")
+    msg_type = request.form.get("msg_type")
     if len(qq_group) == 0:
         return jsonify({
             "status": "error",
@@ -60,7 +61,7 @@ def to_csgo_view():
                     socket_container[qq_group][value_idx][2],
                     nickname,
                     message,
-                    0
+                    int(msg_type)
                 )
                 socket_container[qq_group][value_idx][3] = time.time()
                 dump_container(socket_container)
