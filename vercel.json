@@ -9,6 +9,7 @@
     { "src": "/api/tcp_create", "dest": "api/to_csgo.py"},
     { "src": "/api/tcp_close", "dest": "api/to_csgo.py"},
     { "src": "/api/socket_info", "dest": "api/to_csgo.py"},
+    { "src": "/api/socket_refresh", "dest": "api/to_csgo.py"},
     { "src": "/(.*)", "status": 404, "dest": "404.html" }
   ]
 }
