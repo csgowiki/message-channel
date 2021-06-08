@@ -40,7 +40,7 @@ def connect_tcp():
     success = False
     if qq_group in socket_container.keys():
         for value_idx in range(len(socket_container[qq_group])):
-            if socket_container[qq_group][value_idx][:2] == [sv_remark, sv_host]:
+            if socket_container[qq_group][value_idx][1] == sv_host:
                 socket_container[qq_group][value_idx] = [sv_remark, sv_host, sv_port, time.time()]
                 dump_container(socket_container)
                 return jsonify({
@@ -72,7 +72,7 @@ def close_tcp():
 
     if qq_group in socket_container.keys():
         for value_idx in range(len(socket_container[qq_group])):
-            if socket_container[qq_group][value_idx][:2] == [sv_remark, sv_host]:
+            if socket_container[qq_group][value_idx][1] == sv_host:
                 del socket_container[qq_group][value_idx]
                 dump_container(socket_container)
                 return jsonify({
