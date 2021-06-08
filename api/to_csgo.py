@@ -8,6 +8,11 @@ from flask import Flask, json, jsonify, request
 
 app = Flask(__name__)
 
+'''
+socket_contatiner {
+    qq_group: [sv_remark, sv_host, sv_port, timestamp]
+}
+'''
 
 def load_container() -> dict:
     container = os.getenv('SOCKET_CONTAINER')
@@ -24,9 +29,37 @@ def dump_container(container: dict) -> bool:
     except:
         return False
 
+def send_tcp_package(sv_host, sv_port, message):
+    socket.setdefaulttimeout(3)
+    client = socket.socket()
+    client.connect((sv_host, int(sv_port)))
+    client.send(message.encode('utf-8'))
+    client.close()
+
 @app.route('/api/to_csgo', methods=['POST'])
 def to_csgo_view():
-    return jsonify({"status": "error"})
+    socket_container = load_container()
+    qq_group = request.form.get("qq_group")
+    nickname = request.form.get("nickname")
+    message = request.form.get("message")
+    
+    if qq_group in list(socket_container.keys()):
+        for value_idx in range(len(socket_container[qq_group])):
+            try:
+                send_tcp_package(
+                    socket_container[qq_group][value_idx][1], 
+                    socket_container[qq_group][value_idx][2], 
+                    f"[{nickname}] {message}"
+                )       
+            except Exception as ept:
+                del socket_container[qq_group][value_idx]
+                if len(socket_container[qq_group]) == 0:
+                    socket_container.pop(qq_group)
+                dump_container(socket_container)
+                return jsonify({"status": "error", "message": f"[{ept}] removed invalid socket"})
+        return jsonify({"status": "ok"})
+
+    return jsonify({"status": "warning", "message": "qq group unbind"})
 
 
 @app.route('/api/tcp_create', methods=['POST'])
@@ -70,15 +103,22 @@ def close_tcp():
     sv_host = request.form.get("sv_host")
     qq_group = request.form.get("qq_group")
 
-    if qq_group in socket_container.keys():
+    if qq_group in list(socket_container.keys()):
+        success = False
         for value_idx in range(len(socket_container[qq_group])):
             if socket_container[qq_group][value_idx][1] == sv_host:
-                del socket_container[qq_group][value_idx]
-                dump_container(socket_container)
-                return jsonify({
-                    "status": "ok",
-                    "message": "[success] tcp connect closed"
-                })
+                success = True
+                break
+
+        if success:
+            del socket_container[qq_group][value_idx]
+            if len(socket_container[qq_group]) == 0:
+                socket_container.pop(qq_group)
+            dump_container(socket_container)
+            return jsonify({
+                "status": "ok",
+                "message": "[success] tcp connect closed"
+            })
 
     return jsonify({
         "status": "warning",
@@ -94,6 +134,7 @@ def socket_info():
             "status": "error",
             "message": "token invalid"
         })
+
     socket_container = load_container()
     return jsonify({
         "status": "ok",
