@@ -6,8 +6,9 @@
   "routes": [
     { "src": "/api/to_qq", "dest": "api/to_qq.py" },
     { "src": "/api/to_csgo", "dest": "api/to_csgo.py"},
-    { "src": "/api/tcp_connect", "dest": "api/to_csgo.py"},
+    { "src": "/api/tcp_create", "dest": "api/to_csgo.py"},
     { "src": "/api/tcp_close", "dest": "api/to_csgo.py"},
+    { "src": "/api/socket_info", "dest": "api/to_csgo.py"},
     { "src": "/(.*)", "status": 404, "dest": "404.html" }
   ]
 }
