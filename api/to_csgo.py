@@ -4,7 +4,7 @@ import time
 import copy
 import socket
 import ujson
-from flask import Flask, json, jsonify, request
+from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
@@ -40,7 +40,7 @@ def send_tcp_package(sv_host, sv_port, message):
 def to_csgo_view():
     socket_container = load_container()
     qq_group = request.form.get("qq_group")
-    nickname = request.form.get("nickname")
+    nickname = request.form.get("sender")
     message = request.form.get("message")
     
     if qq_group in list(socket_container.keys()):
