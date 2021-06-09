@@ -39,7 +39,9 @@ def direct_view():
         elif msg_type == 1:
             message = decode_monitor_str(sv_remark, message)
         elif msg_type == 2:
-            message = f"[{sv_remark}] {message}"
+            return jsonify({"status": "ok"})
+            
+#message = f"[{sv_remark}] {message}"
 
         url = (
             f"{http_host}/send_group_msg?"
