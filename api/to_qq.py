@@ -38,7 +38,7 @@ def direct_view():
             message = f"[{sv_remark}]{sender}：{message}"
         elif msg_type == 1:
             message = decode_monitor_str(sv_remark, message)
-        elif msg_type == 1:
+        elif msg_type == 2:
             message = f"[{sv_remark}] {message}"
 
         url = (
