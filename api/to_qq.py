@@ -34,7 +34,6 @@ def direct_view():
         msg_type = int(request.form.get('msg_type'))
         assert len(qq_group) != 0
 
-        assert qq_group == '874734861'
         if msg_type == 0:
             message = f"[{sv_remark}]{sender}：{message}"
         elif msg_type == 1:
