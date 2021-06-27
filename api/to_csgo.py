@@ -7,6 +7,7 @@ import ujson
 from flask import Flask, jsonify, request
 
 app = Flask(__name__)
+app.config['JSON_AS_ASCII'] = False
 
 '''
 socket_contatiner {
@@ -29,6 +30,26 @@ def dump_container(container: dict) -> bool:
     except:
         return False
 
+def modify_monitor_list(monitor_list: list) -> dict:
+    try:
+        res = {
+            "map": monitor_list[0],
+            "players": []
+        }
+        for player in monitor_list[1:]:
+            res["players"].append(
+                {
+                    "client_id": int(player[0]),
+                    "name": player[1],
+                    "steamid": player[2],
+                    "ping": int(player[3])
+                }
+            )
+        return res
+    except Exception as ept:
+        res = {"error": ept}
+    return res
+
 def send_tcp_package(sv_host, sv_port, sender, message, msg_type):
     socket.setdefaulttimeout(3)
     client = socket.socket()
@@ -38,7 +59,15 @@ def send_tcp_package(sv_host, sv_port, sender, message, msg_type):
         "message": message,
         "msg_type": int(msg_type)
     }).encode('utf-8'))
+    ret = ''
+    if msg_type == 2:
+        try:
+            ret_message = client.recv(1024)
+            ret = ujson.loads(ret_message.decode("unicode_escape"))
+        except Exception as ept:
+            ret = f"error | {ept}"
     client.close()
+    return ret
 
 @app.route('/api/to_csgo', methods=['POST'])
 def to_csgo_view():
@@ -118,7 +147,7 @@ def connect_tcp():
 @app.route('/api/tcp_close', methods=['POST'])
 def close_tcp():
     socket_container = load_container()
-    sv_remark = request.form.get("sv_remark")
+    # sv_remark = request.form.get("sv_remark")
     sv_host = request.form.get("sv_host")
     qq_group = request.form.get("qq_group")
     if len(qq_group) == 0:
@@ -198,3 +227,37 @@ def socket_refresh():
         "old_session": old_socket_container,
         "new_session": socket_container
     })
+
+@app.route('/api/server_info', methods=['GET'])
+def server_info():
+    socket_container = load_container()
+    qq_group = request.args.get('qq_group')
+    if qq_group == None or len(qq_group) == 0:
+        return jsonify({
+            "status": "error",
+            "message": "qqgroup empty"
+        })
+
+    #ret = send_tcp_package('lab.csgowiki.top', 50000, 'None', 'None', 2)
+    #return jsonify({"status": "ok", "result": modify_monitor_list(ret)})
+    ret = {}
+    if qq_group in list(socket_container.keys()):
+        for value_idx in range(len(socket_container[qq_group])):
+            try:
+                t = send_tcp_package(
+                    socket_container[qq_group][value_idx][1],
+                    socket_container[qq_group][value_idx][2],
+                    'None',
+                    'None',
+                    2
+                )
+                ret[socket_container[qq_group][value_idx][0]] = modify_monitor_list(t)
+            except Exception as ept:
+                del socket_container[qq_group][value_idx]
+                if len(socket_container[qq_group]) == 0:
+                    socket_container.pop(qq_group)
+                dump_container(socket_container)
+                return jsonify({"status": "error", "message": f"[{ept}] removed invalid socket"})
+        return jsonify({"status": "ok", "result": ret})
+
+    return jsonify({"status": "error", "message": "qq group unbind"})
