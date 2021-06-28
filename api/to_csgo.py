@@ -240,7 +240,7 @@ def server_info():
 
     #ret = send_tcp_package('lab.csgowiki.top', 50000, 'None', 'None', 2)
     #return jsonify({"status": "ok", "result": modify_monitor_list(ret)})
-    ret = {}
+    ret = []
     if qq_group in list(socket_container.keys()):
         for value_idx in range(len(socket_container[qq_group])):
             try:
@@ -252,8 +252,9 @@ def server_info():
                     2
                 )
                 monitor = modify_monitor_list(t)
-                monitor['sv_remark'] = socket_container[qq_group][value_idx][0]
-                ret[socket_container[qq_group][value_idx][1]] = monitor
+                monitor['remark'] = socket_container[qq_group][value_idx][0]
+                monitor['host'] = socket_container[qq_group][value_idx][1]
+                ret.append(monitor)
             except Exception as ept:
                 # del socket_container[qq_group][value_idx]
                 # if len(socket_container[qq_group]) == 0:
