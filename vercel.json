@@ -3,14 +3,13 @@
     { "src": "*.html", "use": "@vercel/static" },   
     { "src": "api/*.py", "use": "@vercel/python" }  
   ],
-  "routes": [
-    { "src": "/api/to_qq", "dest": "api/to_qq.py" },
-    { "src": "/api/to_csgo", "dest": "api/to_csgo.py"},
-    { "src": "/api/tcp_create", "dest": "api/to_csgo.py"},
-    { "src": "/api/tcp_close", "dest": "api/to_csgo.py"},
-    { "src": "/api/socket_info", "dest": "api/to_csgo.py"},
-    { "src": "/api/socket_refresh", "dest": "api/to_csgo.py"},
-    { "src": "/api/server_info", "dest": "api/to_csgo.py"},
-    { "src": "/(.*)", "status": 404, "dest": "404.html" }
+  "rewrites": [
+    { "source": "/api/to_qq", "destination": "api/to_qq.py" },
+    { "source": "/api/to_csgo", "destination": "api/to_csgo.py"},
+    { "source": "/api/tcp_create", "destination": "api/to_csgo.py"},
+    { "source": "/api/tcp_close", "destination": "api/to_csgo.py"},
+    { "source": "/api/socket_info", "destination": "api/to_csgo.py"},
+    { "source": "/api/socket_refresh", "destination": "api/to_csgo.py"},
+    { "source": "/api/server_info", "destination": "api/to_csgo.py"}
   ]
 }
