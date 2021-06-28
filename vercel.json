@@ -11,5 +11,13 @@
     { "source": "/api/socket_info", "destination": "api/to_csgo.py"},
     { "source": "/api/socket_refresh", "destination": "api/to_csgo.py"},
     { "source": "/api/server_info", "destination": "api/to_csgo.py"}
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
+      ]
+    }
   ]
 }
