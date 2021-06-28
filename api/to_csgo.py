@@ -95,10 +95,10 @@ def to_csgo_view():
                 socket_container[qq_group][value_idx][3] = time.time()
                 dump_container(socket_container)
             except Exception as ept:
-                del socket_container[qq_group][value_idx]
-                if len(socket_container[qq_group]) == 0:
-                    socket_container.pop(qq_group)
-                dump_container(socket_container)
+                # del socket_container[qq_group][value_idx]
+                # if len(socket_container[qq_group]) == 0:
+                #     socket_container.pop(qq_group)
+                # dump_container(socket_container)
                 return jsonify({"status": "error", "message": f"[{ept}] removed invalid socket"})
         return jsonify({"status": "ok"})
 
@@ -253,10 +253,10 @@ def server_info():
                 )
                 ret[socket_container[qq_group][value_idx][0]] = modify_monitor_list(t)
             except Exception as ept:
-                del socket_container[qq_group][value_idx]
-                if len(socket_container[qq_group]) == 0:
-                    socket_container.pop(qq_group)
-                dump_container(socket_container)
+                # del socket_container[qq_group][value_idx]
+                # if len(socket_container[qq_group]) == 0:
+                #     socket_container.pop(qq_group)
+                # dump_container(socket_container)
                 return jsonify({"status": "error", "message": f"[{ept}] removed invalid socket"})
         return jsonify({"status": "ok", "result": ret})
 
