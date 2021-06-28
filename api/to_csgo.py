@@ -251,7 +251,9 @@ def server_info():
                     'None',
                     2
                 )
-                ret[socket_container[qq_group][value_idx][0]] = modify_monitor_list(t)
+                monitor = modify_monitor_list(t)
+                monitor['sv_remark'] = socket_container[qq_group][value_idx][0]
+                ret[socket_container[qq_group][value_idx][1]] = monitor
             except Exception as ept:
                 # del socket_container[qq_group][value_idx]
                 # if len(socket_container[qq_group]) == 0:
