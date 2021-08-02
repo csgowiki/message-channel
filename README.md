@@ -2,7 +2,7 @@
 
 ## 安装
 
-1. 安装redis-serger
+1. 安装redis-server
     ```shell
     # Linux
     sudo apt install redis
