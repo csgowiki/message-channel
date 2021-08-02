@@ -22,6 +22,5 @@ class RedisEntity(BaseModel):
     sv_remark: str
     timestamp: float
 
-
 class RedisEntityList(BaseModel):
     content: List[Optional[RedisEntity]]

@@ -2,7 +2,7 @@
 import time
 
 from .models import RedisEntity, RegDataPack
-from .redis import getAllKeys, getValueFromKey, setValueByKey
+from .redis import getValueFromKey, setValueByKey
 
 async def register_method(regData: RegDataPack):
     _, entList = getValueFromKey(regData.qq_group)
