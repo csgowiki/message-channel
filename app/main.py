@@ -21,3 +21,7 @@ async def logout(regData: RegDataPack):
         return await logout_method(regData)
     except Exception as ept:
         raise HTTPException(status_code=400, detail=f"server logout failed: [{ept}]")
+
+@message_channel.post("/api/broadcast", response_model=TextResponse)
+async def broadcast():# to all
+    return {"message": "message broadcasted!"}
