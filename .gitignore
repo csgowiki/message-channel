@@ -133,3 +133,4 @@ dmypy.json
 
 # redis data
 data/
+redis-data/

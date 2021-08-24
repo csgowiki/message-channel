@@ -11,5 +11,5 @@ services:
       TZ: Asia/Shanghai
     volumes:
       - ./redis.conf:/etc/redis/redis.conf 
-      - ./data:/data      
+      - ./redis-data:/data      
     command: redis-server /etc/redis/redis.conf 
