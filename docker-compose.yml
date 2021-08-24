@@ -20,7 +20,21 @@ services:
     container_name: mc-gocq
     ports:
       - 9091:5700
+    depends_on: 
+      - nonebot
     volumes:
       - ./configs/go-cqhttp.yml:/data/config.yml
       - ./data/go-cqhttp/logs:/data/logs
       - ./data/go-cqhttp/data:/data/data
+  
+  nonebot:
+    build: ./nonebot
+    restart: always
+    container_name: mc-nonebot
+    ports:  
+      - 9092:9092
+    environment:
+      - TZ=Asia/Shanghai
+    volumes:
+      - "./nonebot:/root/nonebot"
+    command: python3 /root/nonebot/bot.py
