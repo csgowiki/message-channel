@@ -4,11 +4,11 @@ from typing import List, Tuple
 import redis
 import ujson
 
-from .models import RedisEntity, RedisEntityList, RegDataPack
+from models import RedisEntity, RedisEntityList, RegDataPack
 
-__PREFIX__ = 'csgowiki-message-channel'
+__PREFIX__ = '[message-channel]'
 
-gRedis = redis.Redis(host='localhost', port=6379, decode_responses=True)
+gRedis = redis.Redis(host='localhost', port=9824, decode_responses=True)
 
 def __construct_rediskey_from_intkey(intkey: int):
     return f'{__PREFIX__}{intkey}'
@@ -26,5 +26,9 @@ def getValueFromKey(qq_key: int) -> Tuple[bool, RedisEntityList]:
     return True, RedisEntityList(**{'content': ujson.loads(redis_value)})
 
 def setValueByKey(qq_key: int, value: RedisEntityList) -> bool:
-    ret = gRedis.set(f'{__PREFIX__}{qq_key}', ujson.dumps(value.dict()['content']))
+    ret = gRedis.set(__construct_rediskey_from_intkey(qq_key), ujson.dumps(value.dict()['content']))
+    return ret
+
+def delKey(qq_key: int) -> bool:
+    ret = gRedis.delete(__construct_rediskey_from_intkey(qq_key))
     return ret

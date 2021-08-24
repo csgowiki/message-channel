@@ -2,9 +2,9 @@
 
 from fastapi import FastAPI, HTTPException
 
-from .register import register_method
-from .logout import logout_method
-from .models import RegDataPack, TextResponse, JsonResponse
+from register import register_method
+from logout import logout_method
+from models import RegDataPack, TextResponse, JsonResponse
 
 message_channel = FastAPI()
 

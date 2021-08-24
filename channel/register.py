@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import time
 
-from .models import RedisEntity, RegDataPack
-from .redis import getValueFromKey, setValueByKey
+from models import RedisEntity, RegDataPack
+from redis_utils import getValueFromKey, setValueByKey
 
 async def register_method(regData: RegDataPack):
     _, entList = getValueFromKey(regData.qq_group)

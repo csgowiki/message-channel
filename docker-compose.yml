@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  redis:
+    image: redis:latest
+    restart: always
+    container_name: mc-redis
+    ports:
+      - 9824:6379
+    environment: 
+      TZ: Asia/Shanghai
+    volumes:
+      - ./redis.conf:/etc/redis/redis.conf 
+      - ./data:/data      
+    command: redis-server /etc/redis/redis.conf 

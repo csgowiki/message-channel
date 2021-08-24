@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from .models import RegDataPack
-from .redis import getValueFromKey, setValueByKey
+from models import RegDataPack
+from redis_utils import getValueFromKey, setValueByKey, delKey
 
 async def logout_method(regData: RegDataPack):
     _, entList = getValueFromKey(regData.qq_group)
@@ -10,8 +10,12 @@ async def logout_method(regData: RegDataPack):
         if (
             entList.content[entIdx].sv_host,
             entList.content[entIdx].sv_port
-            ) == (regData.sv_host, regData.sv_port):
+        ) == (regData.sv_host, regData.sv_port):
             del entList.content[entIdx]
-            setValueByKey(regData.qq_group, entList)
+            if len(entList.content) == 0:
+                delKey(regData.qq_group)
+            else:
+                setValueByKey(regData.qq_group, entList)
+
             return {"message": "server logout success!"}
     return {"message": "server not registed!"}
