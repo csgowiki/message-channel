@@ -6,10 +6,21 @@ services:
     restart: always
     container_name: mc-redis
     ports:
-      - 9824:6379
+      - 9090:6379
     environment: 
       TZ: Asia/Shanghai
     volumes:
-      - ./redis.conf:/etc/redis/redis.conf 
-      - ./redis-data:/data      
-    command: redis-server /etc/redis/redis.conf 
+      - ./configs/redis.conf:/etc/redis/redis.conf 
+      - ./data/redis-data:/data      
+    command: redis-server /etc/redis/redis.conf
+
+  go-cqhttp:
+    image: silicer/go-cqhttp
+    restart: always
+    container_name: mc-gocq
+    ports:
+      - 9091:5700
+    volumes:
+      - ./configs/go-cqhttp.yml:/data/config.yml
+      - ./data/go-cqhttp/logs:/data/logs
+      - ./data/go-cqhttp/data:/data/data

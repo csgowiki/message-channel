@@ -134,3 +134,6 @@ dmypy.json
 # redis data
 data/
 redis-data/
+
+# go-cqhttp
+logs/
