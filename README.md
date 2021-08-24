@@ -1,32 +1,23 @@
 # message-channel
 
-## 安装
+## 快速开始
 
-1. 安装redis-server
-    ```shell
-    # Linux
-    sudo apt install redis
-    redis-server
-    
-    # MacOS
-    brew install redis
-    brew services start redis
-    
-    # other: www.google.com | www.baidu.com
-    ```
-    
-2. 安装python依赖
+1. 安装docker & docker-compose
 
-    ```shell
-    pip3 install -r requirements.txt
-    ```
+2. 更改配置文件
+   所有配置文件见：`configs/`
 
-## 使用
+3. 启动容器
+   > 切换至项目根目录
+   ```shell
+   sudo docker-compose up -d
+   ```
 
-```bash
-uvicorn app.main.message_channel --reloard
-```
+4. 登陆QQ
+   ```shell
+   sudo docker logs -f mc-gocq
+   ```
+   用手机QQ扫描终端中的二维码进行登录验证
+
 
 ## API文档
-
-详细文档见：[**localhost:8000/docs**](http://localhost:8000/docs)
