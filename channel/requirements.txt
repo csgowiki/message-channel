@@ -3,3 +3,4 @@ uvicorn
 redis
 ujson
 requests
+pyyaml

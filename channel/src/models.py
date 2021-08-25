@@ -30,5 +30,6 @@ class MessagePack(BaseModel):
     sv_port: int
     qq_group: int
     sv_remark: str
+    sender: str
     message_type: int
     message: str
