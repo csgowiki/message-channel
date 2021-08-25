@@ -1,8 +1,10 @@
 # message-channel
 
+**WIP**
+
 ## 快速开始
 
-1. 安装docker & docker-compose
+1. 安装`docker` & `docker-compose`
 
 2. 更改配置文件
    所有配置文件见：`configs/`

@@ -24,3 +24,11 @@ class RedisEntity(BaseModel):
 
 class RedisEntityList(BaseModel):
     content: List[Optional[RedisEntity]]
+
+class MessagePack(BaseModel):
+    sv_host: str
+    sv_port: int
+    qq_group: int
+    sv_remark: str
+    message_type: int
+    message: str

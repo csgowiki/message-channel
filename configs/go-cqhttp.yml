@@ -85,9 +85,9 @@ servers:
   # HTTP 通信设置
   - http:
       # 服务端监听地址
-      host: 0.0.0.0
+      host: mc-gocq
       # 服务端监听端口
-      port: 5700
+      port: 9091
       # 反向HTTP超时时间, 单位秒
       # 最小值为5，小于5将会忽略本项设置
       timeout: 5

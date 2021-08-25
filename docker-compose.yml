@@ -1,4 +1,4 @@
-version: '3'
+version: '3.7'
 
 services:
   redis:
@@ -18,8 +18,8 @@ services:
     image: silicer/go-cqhttp
     restart: always
     container_name: mc-gocq
-    ports:
-      - 9091:5700
+    expose:
+      - 9091
     links:
       - nonebot:mc-nonebot
     depends_on: 
@@ -38,7 +38,7 @@ services:
     environment:
       - TZ=Asia/Shanghai
     volumes:
-      - "./nonebot:/root/nonebot"
+      - ./nonebot:/root/nonebot
     command: python3 /root/nonebot/bot.py
   
   message-channel:
@@ -49,6 +49,8 @@ services:
       - 9090:8000
     links:
       - redis:mc-redis
+      - go-cqhttp:mc-gocq
     depends_on: 
       - redis
+      - go-cqhttp
     command: uvicorn server:message_channel --host 0.0.0.0 --port 8000
