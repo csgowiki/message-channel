@@ -137,3 +137,16 @@ redis-data/
 
 # go-cqhttp
 logs/
+
+# sourcemod
+
+*.inc
+!socket.inc
+!http.inc
+!json.inc
+!ripext.inc
+
+compile.sh
+deploy.sh
+spcomp
+compiled/
