@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from models import RegDataPack
-from redis_utils import getValueFromKey, setValueByKey, delKey
+from src.models import RegDataPack
+from src.redis_utils import getValueFromKey, setValueByKey, delKey
 
 async def logout_method(regData: RegDataPack):
     _, entList = getValueFromKey(regData.qq_group)

@@ -4,7 +4,7 @@ from typing import List, Tuple
 import redis
 import ujson
 
-from models import RedisEntity, RedisEntityList, RegDataPack
+from src.models import RedisEntity, RedisEntityList, RegDataPack
 
 __PREFIX__ = '[message-channel]'
 

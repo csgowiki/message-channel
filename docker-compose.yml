@@ -46,7 +46,9 @@ services:
     restart: always
     container_name: mc-core
     ports:
-      - 8080:8080
+      - 9090:8000
     links:
       - redis:mc-redis
-    command: uvicorn server:message_channel --host 0.0.0.0 --port 8080
+    depends_on: 
+      - redis
+    command: uvicorn server:message_channel --host 0.0.0.0 --port 8000
