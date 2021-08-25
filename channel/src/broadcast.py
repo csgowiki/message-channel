@@ -23,9 +23,12 @@ async def send_message_to_qq(msgPack: MessagePack):
     assert resp.status_code == 200, f"can't send message to qq; {resp.status_code} is not allowed"
 
 async def send_message_to_csgo(msgPack: MessagePack):
-    soc = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    soc.sendto(ujson.dumps(msgPack.dict()).encode('utf-8'), (msgPack.sv_host, msgPack.sv_port))
-    ret = soc.recvfrom(102400).decode('utf-8')
+    # soc = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    soc = socket.socket() # TCP
+    soc.connect((msgPack.sv_host, msgPack.sv_port))
+    # soc.sendto(ujson.dumps(msgPack.dict()).encode('utf-8'), (msgPack.sv_host, msgPack.sv_port))
+    soc.send(ujson.dumps(msgPack.dict()).encode('utf-8'))
+    ret = soc.recv(102400).decode('utf-8')
     if msgPack.message_type == 0 and ret == 'ok':
         return True
     if msgPack.message_type == 1:
@@ -38,7 +41,7 @@ async def send_message_to_csgo(msgPack: MessagePack):
 
 async def broadcast_from_csgo(msgPack: MessagePack):
     assert await valify(msgPack), 'qq group/server is not registed'
-    send_message_to_qq(msgPack)
+    await send_message_to_qq(msgPack)
     # to other csgo-server
     failed_server_list = []
     _, entList = getValueFromKey(msgPack.qq_group)
