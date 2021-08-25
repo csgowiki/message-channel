@@ -5,8 +5,8 @@ services:
     image: redis:latest
     restart: always
     container_name: mc-redis
-    ports:
-      - 9090:6379
+    expose:
+      - 6379
     environment: 
       TZ: Asia/Shanghai
     volumes:
@@ -20,6 +20,8 @@ services:
     container_name: mc-gocq
     ports:
       - 9091:5700
+    links:
+      - nonebot:mc-nonebot
     depends_on: 
       - nonebot
     volumes:
@@ -31,10 +33,20 @@ services:
     build: ./nonebot
     restart: always
     container_name: mc-nonebot
-    ports:  
-      - 9092:9092
+    expose:  
+      - 9092
     environment:
       - TZ=Asia/Shanghai
     volumes:
       - "./nonebot:/root/nonebot"
     command: python3 /root/nonebot/bot.py
+  
+  message-channel:
+    build: ./channel
+    restart: always
+    container_name: mc-core
+    ports:
+      - 8080:8080
+    links:
+      - redis:mc-redis
+    command: uvicorn server:message_channel --host 0.0.0.0 --port 8080

@@ -8,7 +8,7 @@ from models import RedisEntity, RedisEntityList, RegDataPack
 
 __PREFIX__ = '[message-channel]'
 
-gRedis = redis.Redis(host='localhost', port=9090, decode_responses=True)
+gRedis = redis.Redis(host='mc-redis', port=6379, decode_responses=True)
 
 def __construct_rediskey_from_intkey(intkey: int):
     return f'{__PREFIX__}{intkey}'

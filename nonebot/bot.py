@@ -3,4 +3,4 @@ import nonebot
 if __name__ == '__main__':
     nonebot.init()
     nonebot.load_builtin_plugins()
-    nonebot.run(host='127.0.0.1', port=9092)
+    nonebot.run(host='mc-nonebot', port=9092)
