@@ -28,7 +28,7 @@ async def register(regData: RegDataPack, token: str):
     except Exception as ept:
         raise HTTPException(status_code=400, detail=f"server register failed: [{ept}]")
 
-@message_channel.delete("/api/logout", response_model=TextResponse)
+@message_channel.post("/api/logout", response_model=TextResponse)
 async def logout(regData: RegDataPack, token: str):
     try:
         await verify_token(token)
