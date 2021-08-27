@@ -23,6 +23,7 @@ async def valify_qq(msgPack: QQMessagePack) -> bool:
     if msgPack.server_id == -1: return True
     if msgPack.server_id < -1: return False
     if len(entList.content) <= msgPack.server_id: return False
+    return True
 
 async def send_message_to_qq(msgPack: CSGOMessagePack):
     postMsg = f'[{msgPack.sv_remark}] {msgPack.sender}：{msgPack.message}'
@@ -37,14 +38,16 @@ async def send_message_to_csgo(msgPack: QQMessagePack, ent: RedisEntity):
     soc.send(ujson.dumps(msgPack.dict()).encode('utf-8'))
     ret = soc.recv(102400).decode('utf-8')
     if msgPack.message_type == 0 and ret == 'ok':
-        return True
+        return True, None
     if msgPack.message_type == 1:
         try:
             jsonret = ujson.loads(ret)
             return True, jsonret
         except Exception as ept:
-            return False
-    return False
+            return False, None
+    elif msgPack.message_type == 2 and ret == 'ok':
+        return True, None
+    return False, None
 
 async def broadcast_from_csgo(msgPack: CSGOMessagePack):
     assert await valify(msgPack), 'qq group/server is not registed'
@@ -54,7 +57,7 @@ async def broadcast_from_csgo(msgPack: CSGOMessagePack):
     _, entList = getValueFromKey(msgPack.qq_group)
     for ent in entList.content:
         if (ent.sv_host, ent.sv_port) != (msgPack.sv_host, msgPack.sv_port):
-            if not await send_message_to_csgo(msgPack):
+            if not (await send_message_to_csgo(msgPack))[0]:
                 failed_server_list.append(ent.sv_remark)
     
     if len(failed_server_list) != 0:
@@ -69,7 +72,7 @@ async def broadcast_from_qq(msgPack: QQMessagePack):
     _, entList = getValueFromKey(msgPack.qq_group)
     if msgPack.server_id == -1:
         for ent in entList.content:
-            if not await send_message_to_csgo(msgPack, ent):
+            if not (await send_message_to_csgo(msgPack, ent))[0]:
                 failed_server_list.append(ent.sv_remark)
             else:
                 success_server_list.append(ent.sv_remark)

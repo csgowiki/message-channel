@@ -2,10 +2,17 @@ import json
 from aiocqhttp import message
 import requests
 import aiocqhttp
-from nonebot import get_bot, on_notice, NoticeSession
+from nonebot import get_bot, on_notice, NoticeSession, on_websocket_connect
 import config
 
 bot = get_bot()
+
+bot_user_id = 0 # Bot的QQ号，会自动获取
+
+@on_websocket_connect
+async def connect(event: aiocqhttp.Event):
+    global bot_user_id
+    bot_user_id =  (await bot.get_login_info())['user_id']
 
 async def parseCommand(messages: aiocqhttp.message.Message) -> dict:
     '''
@@ -72,7 +79,7 @@ async def parseCommand(messages: aiocqhttp.message.Message) -> dict:
 
 @on_notice('notify')
 async def poke(session: NoticeSession):
-    if (session.event.sub_type == 'poke' and session.event.target_id == (await bot.get_login_info())['user_id']):
+    if session.event.sub_type == 'poke' and session.event.target_id == bot_user_id:
         if not session.event.group_id: return
         # group_info = bot.get_group_info(group_id=session.event.group_id)
         # data = {
@@ -101,14 +108,15 @@ async def trigger(event: aiocqhttp.Event):
     if mc_command['command_type'] == 2 and event.sender['user_id'] not in config.SUPERUSERS:
         await bot.send_group_msg(
             group_id=event.group_id,
-            message=message.MessageSegment.at(event.sender['user_id']) + "你没有权限使用该指令" + message.MessageSegment.face(28)
+            message=message.MessageSegment.reply(event.message_id) + "你没有权限使用该指令" + message.MessageSegment.face(28)
         )
         return
     # 执行 内容
     if mc_command['command_type'] == 2 and len(mc_command['content'].strip()) == 0:
         await bot.send_group_msg(
             group_id=event.group_id,
-            message=message.MessageSegment.at(event.sender['user_id']) + "执行内容不能为空"
+            # message=message.MessageSegment.at(event.sender['user_id']) + "执行内容不能为空"
+            message=message.MessageSegment.reply(event.message_id) + "执行内容不能为空"
         )
     group_info = await bot.get_group_info(group_id=event.group_id)
     data = {
@@ -123,9 +131,22 @@ async def trigger(event: aiocqhttp.Event):
     resp = requests.post(url, json=data, headers={"Content-Type": "application/json"})
 
     if resp.status_code == 200:
-        await bot.send_group_msg(
-            group_id=event.group_id,
-            message=message.MessageSegment.poke('???', event.sender['user_id'])
-        )
-    print(resp.content.decode('utf-8'))
+        if mc_command['command_type'] == 2:
+            await bot.send_group_msg(
+                group_id=event.group_id,
+                message=message.MessageSegment.reply(event.message_id) + '命令已发送至目标服务器执行'
+            )
+    else:
+        if config.COMMAND_FAILED_NOTICE:
+            # 检查Bot是否是管理员或群主
+            botinfo = await bot.get_group_member_info(group_id=event.group_id, user_id=bot_user_id)
+            if botinfo['role'] in ['owner', 'admin']:
+                await bot.send_private_msg(
+                    user_id=event.sender['user_id'],
+                    group_id=event.group_id,
+                    message=message.MessageSegment.face(36) + f'消息发送出现错误：{resp.content.decode("utf-8")}'
+                )
+            else:
+                print(f'[ERROR] 消息发送出现异常，但是Bot不是QQ群管理员，无法私聊发送者报错内容：{resp.content.decode("utf-8")}')
+
 

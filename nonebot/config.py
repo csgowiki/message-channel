@@ -11,6 +11,10 @@ MC_ACCESS_TOKEN = 'xxx'   # 确保与channel/config.yml中的access_token相同
 
 COMMAND_TRIGGER = ['.', '。', '!', '！']   # 转发命令的前缀，设为[]空即为所有群内聊天内容都转发
 
+COMMAND_SUCCESS_PRINTOUT = ''
+
+COMMAND_FAILED_NOTICE = True  # 如果消息发送失败，机器人是否私聊通知指令发起者。 **开启该功能需要机器人是管理员或群主**
+
 # 转发命令格式
 #
 #       <前缀><服务器编号: 可选> <命令> <内容>

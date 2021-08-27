@@ -205,13 +205,22 @@ public Action OnSocketReceive(Handle socket, char[] receiveData, const int dataS
     JSONObject json_obj = JSONObject.FromString(receiveData);
     char sender[LENGTH_NAME];
     char message[LENGTH_MESSAGE];
+    char group_name[LENGTH_MESSAGE];
     int msg_type = json_obj.GetInt("message_type");
     json_obj.GetString("sender", sender, sizeof(sender));
     json_obj.GetString("message", message, sizeof(message));
+    json_obj.GetString("qq_group_name", group_name, sizeof(group_name));
 
     if (msg_type == 0) {
-        PrintToChatAll("[\x09QQ\x01] \x04%s\x01：%s", sender, message);
-        PrintToServer("[QQ] \x04%s\x01：%s", sender, message);
+        PrintToChatAll("[\x09%s\x01] \x04%s\x01：%s", group_name, sender, message);
+        PrintToServer("[%s] \x04%s\x01：%s", group_name, sender, message);
+    }
+    else if (msg_type == 1) {
+
+    }
+    else if (msg_type == 2) {
+        PrintToServer("[QQChat] 执行指令：%s", message);
+        ServerCommand("%s", message);
     }
     delete json_obj;
 	SocketSend(socket, "ok", -1);
