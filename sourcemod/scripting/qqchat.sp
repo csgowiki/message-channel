@@ -219,8 +219,18 @@ public Action OnSocketReceive(Handle socket, char[] receiveData, const int dataS
 
     }
     else if (msg_type == 2) {
-        PrintToServer("[QQChat] 执行指令：%s", message);
-        ServerCommand("%s", message);
+        // token验证
+        char auth_token[LENGTH_TOKEN];
+        char token[LENGTH_TOKEN];
+        json_obj.GetString("auth_token", auth_token, sizeof(auth_token));
+        GetConVarString(g_MessageChannelTokenCvar, token, sizeof(token));
+        if (StrEqual(auth_token, token)) {
+            PrintToServer("[QQChat] 执行指令：%s", message);
+            ServerCommand("%s", message);
+        }
+        else {
+            PrintToServer("[QQChat] token验证失败，拒绝执行命令");
+        }
     }
     delete json_obj;
 	SocketSend(socket, "ok", -1);

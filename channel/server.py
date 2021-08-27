@@ -44,7 +44,7 @@ async def broadcast():# to all
 async def broadcast_csgo(msgPack: CSGOMessagePack, token: str):
     try:
         await verify_token(token)
-        return await broadcast_from_csgo(msgPack)
+        return await broadcast_from_csgo(msgPack, token)
     except Exception as ept:
         raise HTTPException(status_code=400, detail=f"send message error: [{ept}]")
 
@@ -52,6 +52,6 @@ async def broadcast_csgo(msgPack: CSGOMessagePack, token: str):
 async def broadcast_qq(msgPack: QQMessagePack, token: str):
     try:
         await verify_token(token)
-        return await broadcast_from_qq(msgPack)
+        return await broadcast_from_qq(msgPack, token)
     except Exception as ept:
         raise HTTPException(status_code=400, detail=f"send message error: [{ept}]")
