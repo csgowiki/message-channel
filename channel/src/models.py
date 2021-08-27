@@ -35,7 +35,7 @@ class CSGOMessagePack(BaseModel):
     message: str
 
 class QQMessagePack(BaseModel):
-    server_num: Optional[int] = -1
+    server_id: Optional[int] = -1
     qq_group: int
     qq_group_name: str
     sender: str

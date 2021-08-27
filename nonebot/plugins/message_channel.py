@@ -25,7 +25,7 @@ async def parseCommand(messages: aiocqhttp.message.Message) -> dict:
     if len(config.COMMAND_TRIGGER) != 0:
         messages[0]['data']['text'] = messages[0]['data']['text'][1:]  # trim 1st char
     # --- parse server id ---
-    firstMessages = messages[0]['data']['text'][1:].split(' ')
+    firstMessages = messages[0]['data']['text'].split(' ')
     if len(firstMessages) <= 1:
         return retjson
     if len(firstMessages[0]) == 0: # 未指定server id
@@ -41,6 +41,7 @@ async def parseCommand(messages: aiocqhttp.message.Message) -> dict:
     if firstMessages[idx] == '状态':
         retjson['command_type'] = 1
         retjson['success'] = True
+        retjson['content'] = ''
         return retjson
     elif firstMessages[idx] == '执行':
         retjson['command_type'] = 2
@@ -77,7 +78,7 @@ async def poke(session: NoticeSession):
         # data = {
         #     'qq_group': group_info['group_id'],
         #     'qq_group_name': group_info['group_name'],
-        #     'server_num': -1,
+        #     'server_id': -1,
         #     'sender': 'None',
         #     'message': '',
         #     'message_type': 1
@@ -96,7 +97,6 @@ async def trigger(event: aiocqhttp.Event):
     except Exception as ept:
         print(f'[Error] {ept}')
         return
-    print(f'命令解析：{mc_command}')
     # 执行 权限
     if mc_command['command_type'] == 2 and event.sender['user_id'] not in config.SUPERUSERS:
         await bot.send_group_msg(
@@ -104,3 +104,28 @@ async def trigger(event: aiocqhttp.Event):
             message=message.MessageSegment.at(event.sender['user_id']) + "你没有权限使用该指令" + message.MessageSegment.face(28)
         )
         return
+    # 执行 内容
+    if mc_command['command_type'] == 2 and len(mc_command['content'].strip()) == 0:
+        await bot.send_group_msg(
+            group_id=event.group_id,
+            message=message.MessageSegment.at(event.sender['user_id']) + "执行内容不能为空"
+        )
+    group_info = await bot.get_group_info(group_id=event.group_id)
+    data = {
+        'qq_group': group_info['group_id'],
+        'qq_group_name': group_info['group_name'],
+        'sender': event.sender['nickname'],
+        'server_id': mc_command['server_id'],
+        'message_type': mc_command['command_type'],
+        'message': mc_command['content']
+    }
+    url = f'http://mc-core:8000/api/broadcast_from_qq?token={config.MC_ACCESS_TOKEN}'
+    resp = requests.post(url, json=data, headers={"Content-Type": "application/json"})
+
+    if resp.status_code == 200:
+        await bot.send_group_msg(
+            group_id=event.group_id,
+            message=message.MessageSegment.poke('???', event.sender['user_id'])
+        )
+    print(resp.content.decode('utf-8'))
+

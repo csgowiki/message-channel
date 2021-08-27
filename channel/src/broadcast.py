@@ -20,9 +20,9 @@ async def valify(msgPack: CSGOMessagePack) -> bool:
 async def valify_qq(msgPack: QQMessagePack) -> bool:
     _, entList = getValueFromKey(msgPack.qq_group)
     if not _: return False
-    if msgPack.server_num == -1: return True
-    if msgPack.server_num < -1: return False
-    if len(entList.content) <= msgPack.server_num: return False
+    if msgPack.server_id == -1: return True
+    if msgPack.server_id < -1: return False
+    if len(entList.content) <= msgPack.server_id: return False
 
 async def send_message_to_qq(msgPack: CSGOMessagePack):
     postMsg = f'[{msgPack.sv_remark}] {msgPack.sender}：{msgPack.message}'
@@ -67,14 +67,14 @@ async def broadcast_from_qq(msgPack: QQMessagePack):
     failed_server_list = []
     success_server_list = []
     _, entList = getValueFromKey(msgPack.qq_group)
-    if msgPack.server_num == -1:
+    if msgPack.server_id == -1:
         for ent in entList.content:
             if not await send_message_to_csgo(msgPack, ent):
                 failed_server_list.append(ent.sv_remark)
             else:
                 success_server_list.append(ent.sv_remark)
     else:
-        await send_message_to_csgo(msgPack, entList.content[msgPack.server_num])
+        await send_message_to_csgo(msgPack, entList.content[msgPack.server_id])
     
     if len(failed_server_list) != 0:
         raise HTTPException(status_code=401, detail=f"those server may not recieve message: {str(failed_server_list)}")

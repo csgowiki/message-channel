@@ -5,7 +5,7 @@ DEBUG = False
 HOST = 'mc-nonebot'
 PORT = 9092    # 该端口不用开放公网
 
-SUPERUSERS = {'765892480'}  # 管理员的QQ号，拥有Bot控制的最高权限，可以触发 <执行> 命令
+SUPERUSERS = {765892480}  # 管理员的QQ号，拥有Bot控制的最高权限，可以触发 <执行> 命令
 
 MC_ACCESS_TOKEN = 'xxx'   # 确保与channel/config.yml中的access_token相同
 
