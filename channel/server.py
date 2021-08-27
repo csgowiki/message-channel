@@ -5,7 +5,7 @@ from fastapi import FastAPI, HTTPException
 from src.register import register_method
 from src.logout import logout_method
 from src.broadcast import broadcast_from_csgo, broadcast_from_qq
-from src.models import RegDataPack, TextResponse, JsonResponse, MessagePack
+from src.models import RegDataPack, TextResponse, JsonResponse, CSGOMessagePack, QQMessagePack
 
 message_channel = FastAPI()
 
@@ -41,7 +41,7 @@ async def broadcast():# to all
     return {"message": "message broadcasted!"}
 
 @message_channel.post("/api/broadcast_from_csgo", response_model=TextResponse)
-async def broadcast_csgo(msgPack: MessagePack, token: str):
+async def broadcast_csgo(msgPack: CSGOMessagePack, token: str):
     try:
         await verify_token(token)
         return await broadcast_from_csgo(msgPack)
@@ -49,7 +49,7 @@ async def broadcast_csgo(msgPack: MessagePack, token: str):
         raise HTTPException(status_code=400, detail=f"send message error: [{ept}]")
 
 @message_channel.post("/api/broadcast_from_qq", response_model=TextResponse)
-async def broadcast_qq(msgPack: MessagePack, token: str):
+async def broadcast_qq(msgPack: QQMessagePack, token: str):
     try:
         await verify_token(token)
         return await broadcast_from_qq(msgPack)

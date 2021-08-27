@@ -1,12 +1,14 @@
 version: '3.7'
 
 services:
-  redis:
+  mc-redis:
     image: redis:latest
     restart: always
     container_name: mc-redis
     expose:
       - 6379
+    networks:
+      - mc-network
     environment: 
       TZ: Asia/Shanghai
     volumes:
@@ -14,43 +16,50 @@ services:
       - ./data/redis-data:/data      
     command: redis-server /etc/redis/redis.conf
 
-  go-cqhttp:
+  mc-gocq:
     image: silicer/go-cqhttp
     restart: always
     container_name: mc-gocq
     expose:
       - 9091
-    links:
-      - nonebot:mc-nonebot
+    networks:
+      - mc-network
     depends_on: 
-      - nonebot
+      - mc-nonebot
     volumes:
       - ./configs/go-cqhttp.yml:/data/config.yml
       - ./data/go-cqhttp/logs:/data/logs
       - ./data/go-cqhttp/data:/data/data
   
-  nonebot:
+  mc-nonebot:
     build: ./nonebot
     restart: always
     container_name: mc-nonebot
     expose:  
       - 9092
+    networks:
+      - mc-network
     environment:
       - TZ=Asia/Shanghai
     volumes:
       - ./nonebot:/root/nonebot
     command: python3 /root/nonebot/bot.py
   
-  message-channel:
+  mc-core:
     build: ./channel
     restart: always
     container_name: mc-core
     ports:
       - 9090:8000
-    links:
-      - redis:mc-redis
-      - go-cqhttp:mc-gocq
+    expose:
+      - 8000
+    networks:
+      - mc-network
     depends_on: 
-      - redis
-      - go-cqhttp
+      - mc-redis
+      - mc-gocq
     command: uvicorn server:message_channel --host 0.0.0.0 --port 8000
+  
+networks:
+  mc-network:
+    driver: bridge

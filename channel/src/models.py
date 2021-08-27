@@ -25,11 +25,19 @@ class RedisEntity(BaseModel):
 class RedisEntityList(BaseModel):
     content: List[Optional[RedisEntity]]
 
-class MessagePack(BaseModel):
+class CSGOMessagePack(BaseModel):
     sv_host: str
     sv_port: int
     qq_group: int
     sv_remark: str
+    sender: str
+    message_type: int
+    message: str
+
+class QQMessagePack(BaseModel):
+    server_num: Optional[int] = -1
+    qq_group: int
+    qq_group_name: str
     sender: str
     message_type: int
     message: str
