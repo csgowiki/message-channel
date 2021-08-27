@@ -3,7 +3,7 @@ from aiocqhttp import message
 import requests
 import aiocqhttp
 from nonebot import get_bot, on_notice, NoticeSession
-from .. import config
+import config
 
 bot = get_bot()
 
@@ -96,6 +96,7 @@ async def trigger(event: aiocqhttp.Event):
     except Exception as ept:
         print(f'[Error] {ept}')
         return
+    print(f'命令解析：{mc_command}')
     # 执行 权限
     if mc_command['command_type'] == 2 and event.sender['user_id'] not in config.SUPERUSERS:
         await bot.send_group_msg(

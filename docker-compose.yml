@@ -7,8 +7,8 @@ services:
     container_name: mc-redis
     expose:
       - 6379
-    networks:
-      - mc-network
+    # networks:
+    #   - mc-network
     environment: 
       TZ: Asia/Shanghai
     volumes:
@@ -22,8 +22,8 @@ services:
     container_name: mc-gocq
     expose:
       - 9091
-    networks:
-      - mc-network
+    # networks:
+    #   - mc-network
     depends_on: 
       - mc-nonebot
     volumes:
@@ -37,8 +37,8 @@ services:
     container_name: mc-nonebot
     expose:  
       - 9092
-    networks:
-      - mc-network
+    # networks:
+    #   - mc-network
     environment:
       - TZ=Asia/Shanghai
     volumes:
@@ -53,13 +53,13 @@ services:
       - 9090:8000
     expose:
       - 8000
-    networks:
-      - mc-network
+    # networks:
+    #   - mc-network
     depends_on: 
       - mc-redis
       - mc-gocq
     command: uvicorn server:message_channel --host 0.0.0.0 --port 8000
   
-networks:
-  mc-network:
-    driver: bridge
+# networks:
+#   mc-network:
+#     driver: bridge

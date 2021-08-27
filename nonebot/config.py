@@ -7,7 +7,7 @@ PORT = 9092    # 该端口不用开放公网
 
 SUPERUSERS = {'765892480'}  # 管理员的QQ号，拥有Bot控制的最高权限，可以触发 <执行> 命令
 
-ACCESS_TOKEN = 'xxx'   # 确保与channel/config.yml中的access_token相同
+MC_ACCESS_TOKEN = 'xxx'   # 确保与channel/config.yml中的access_token相同
 
 COMMAND_TRIGGER = ['.', '。', '!', '！']   # 转发命令的前缀，设为[]空即为所有群内聊天内容都转发
 
