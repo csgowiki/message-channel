@@ -1,25 +1,23 @@
-# message-channel
+# 消息通道
 
-**WIP**
+**开发中**
 
-## 快速开始
+**message channel**是基于docker的，CS:GO服务器与QQ群双向信息通信框架。
 
-1. 安装`docker` & `docker-compose`
+## 特性
+该项目提供的功能：
+- [x] CSGO服务器与QQ群之间消息的稳定转发
+- [x] 自己提供QQ号，消息转发安全可靠
+- [x] 轻量化sourcemod插件
+- [x] 可拓展的QQ插件，可以根据自己的需求更改
+- [x] 使用Redis持久化保存服务器注册数据
 
-2. 更改配置文件
-   所有配置文件见：`configs/`
+更多的功能与使用方法见：[**csgowiki帮助中心**](https://docs.csgowiki.top/message-channel)
 
-3. 启动容器
-   > 切换至项目根目录
-   ```shell
-   sudo docker-compose up -d
-   ```
+## Issue
 
-4. 登陆QQ
-   ```shell
-   sudo docker logs -f mc-gocq
-   ```
-   用手机QQ扫描终端中的二维码进行登录验证
+如果遇到问题或对本项目有建议，请按照Issue模板填写内容，越详细的内容，越有可能解决问题。
 
+## 贡献
 
-## API文档
+关于本项目的PR都会被审阅，欢迎提交。
