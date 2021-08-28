@@ -4,7 +4,7 @@ from fastapi import FastAPI, HTTPException
 
 from src.register import register_method
 from src.logout import logout_method
-from src.broadcast import broadcast_from_csgo, broadcast_from_qq
+from src.broadcast import broadcast_from_csgo, broadcast_from_qq, get_server_info
 from src.models import RegDataPack, TextResponse, JsonResponse, CSGOMessagePack, QQMessagePack
 
 message_channel = FastAPI()
@@ -53,5 +53,16 @@ async def broadcast_qq(msgPack: QQMessagePack, token: str):
     try:
         await verify_token(token)
         return await broadcast_from_qq(msgPack, token)
+    except Exception as ept:
+        raise HTTPException(status_code=400, detail=f"send message error: [{ept}]")
+
+@message_channel.get("/api/server_info", response_model=JsonResponse)
+async def server_info(token: str, qq_group: int, server_id: int = -1):
+    try:
+        await verify_token(token)
+        _, servers_info = await get_server_info(qq_group, token, server_id)
+        if not _:
+            raise HTTPException(status_code=401, detail=f"those server may not recieve message: {str(servers_info)}")
+        return {'message': 'send message success!', 'results': servers_info}
     except Exception as ept:
         raise HTTPException(status_code=400, detail=f"send message error: [{ept}]")

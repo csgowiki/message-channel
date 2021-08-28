@@ -25,27 +25,40 @@ async def valify_qq(msgPack: QQMessagePack) -> bool:
     if len(entList.content) <= msgPack.server_id: return False
     return True
 
-async def send_message_to_qq(msgPack: CSGOMessagePack):
-    postMsg = f'[{msgPack.sv_remark}] {msgPack.sender}：{msgPack.message}'
+async def decode_servers_info(servers_info: list) -> str:
+    msg = "====服务器列表===="
+    for servers in servers_info:
+        msg += f"\n服务器编号：{servers['server_id']}\n"
+        msg += f"服务器名称：{servers['remark']}\n"
+        msg += f"当前地图：{servers['current_map']}\n"
+        msg += f"在线：{len(servers['players_info'])}人\n"
+    return msg
+
+async def send_message_to_qq(msgPack: CSGOMessagePack, servers_info: list = []):
+    if msgPack.message_type == 0:
+        postMsg = f'[{msgPack.sv_remark}] {msgPack.sender}：{msgPack.message}'
+    elif msgPack.message_type == 1:
+        postMsg = await decode_servers_info(servers_info)
+    else:
+        raise HTTPException(status_code=400, detail=f"message_type {msgPack.message_type} is not allowed")
     resp = requests.get(f"{__GOCQHTTP_URL__}/send_msg?group_id={msgPack.qq_group}&message={postMsg}")
     assert resp.status_code == 200, f"can't send message to qq; {resp.status_code} is not allowed"
 
 async def send_message_to_csgo(msgPack: QQMessagePack, ent: RedisEntity, token: str):
-    # soc = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     soc = socket.socket() # TCP
     soc.connect((ent.sv_host, ent.sv_port))
-    # soc.sendto(ujson.dumps(msgPack.dict()).encode('utf-8'), (msgPack.sv_host, msgPack.sv_port))
     senddict = msgPack.dict()
     senddict['auth_token'] = token
     soc.send(ujson.dumps(senddict).encode('utf-8'))
-    ret = soc.recv(102400).decode('utf-8')
+    ret = soc.recv(1024 * 20).decode('utf-8')
     if msgPack.message_type == 0 and ret == 'ok':
         return True, None
     if msgPack.message_type == 1:
         try:
-            jsonret = ujson.loads(ret)
+            jsonret = ujson.loads(ret.strip())
             return True, jsonret
         except Exception as ept:
+            print(f'[Error] send_message_to_csgo: {ept}')
             return False, None
     elif msgPack.message_type == 2 and ret == 'ok':
         return True, None
@@ -69,6 +82,15 @@ async def broadcast_from_csgo(msgPack: CSGOMessagePack, token: str):
 
 async def broadcast_from_qq(msgPack: QQMessagePack, token: str):
     assert await valify_qq(msgPack), 'qq group/server is not registed'
+    # preprocess server info
+    if msgPack.message_type == 1:
+        _, servers_info = await get_server_info(msgPack.qq_group, token, msgPack.server_id)
+        if not _:
+            raise HTTPException(status_code=401, detail=f"those server may not recieve message: {str(servers_info)}")
+        await send_message_to_qq(msgPack, servers_info)
+        return {'message': 'message send success!'}
+    #########################
+
     failed_server_list = []
     success_server_list = []
     _, entList = getValueFromKey(msgPack.qq_group)
@@ -87,3 +109,41 @@ async def broadcast_from_qq(msgPack: QQMessagePack, token: str):
     if len(success_server_list) == 0:
         return {"message": "message is send to no server"}
     return {"message": "message send success!"}
+
+async def get_server_info(qqgroup: int, token:str, server_id: int = -1):
+    _, entList = getValueFromKey(qqgroup)
+    assert _ and len(entList.content) > server_id and isinstance(server_id, int) and server_id >= -1, 'qq group/server is not registed'
+    msgPack = QQMessagePack(
+        **{
+            'server_id': server_id,
+            'qq_group': qqgroup,
+            'qq_group_name': 'unknown',
+            'sender': 'unknown',
+            'message_type': 1,
+            'message': 'unknown'
+        }
+    )
+    failed_server_list = []
+    servers_info = []
+    if server_id == -1:
+        for ent_idx in range(len(entList.content)):
+            _, server_info = await send_message_to_csgo(msgPack, entList.content[ent_idx], token)
+            if _:
+                server_info['server_id'] = ent_idx
+                server_info['remark'] = entList.content[ent_idx].sv_remark
+                servers_info.append(server_info)
+            else:
+                print(f'[Error] server info failed: <{entList.content[ent_idx].sv_remark}>')
+                failed_server_list.append(entList.content[ent_idx].sv_remark)
+    else:
+        _, server_info = await send_message_to_csgo(msgPack, entList.content[msgPack.server_id], token)
+        if _:
+            server_info['server_id'] = server_id
+            server_info['remark'] = entList.content[server_id].sv_remark
+            servers_info.append(server_info)
+        else:
+            failed_server_list.append(entList.content[server_id].sv_remark)
+    
+    if len(failed_server_list) != 0:
+        return False, failed_server_list
+    return True, servers_info

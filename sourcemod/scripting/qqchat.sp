@@ -10,6 +10,7 @@
 
 #pragma semicolon 1
 #pragma newdecls required
+#pragma dynamic 131072
 
 #include <sourcemod>
 #include <sdkhooks>
@@ -203,6 +204,16 @@ public Action OnSocketReceive(Handle socket, char[] receiveData, const int dataS
         return;
     }
     JSONObject json_obj = JSONObject.FromString(receiveData);
+    // auth token
+    char auth_token[LENGTH_TOKEN];
+    char token[LENGTH_TOKEN];
+    json_obj.GetString("auth_token", auth_token, sizeof(auth_token));
+    GetConVarString(g_MessageChannelTokenCvar, token, sizeof(token));
+    if (!StrEqual(auth_token, token)) {
+        PrintToServer("[QQChat] token验证失败");
+        return;
+    }
+    
     char sender[LENGTH_NAME];
     char message[LENGTH_MESSAGE];
     char group_name[LENGTH_MESSAGE];
@@ -214,26 +225,22 @@ public Action OnSocketReceive(Handle socket, char[] receiveData, const int dataS
     if (msg_type == 0) {
         PrintToChatAll("[\x09%s\x01] \x04%s\x01：%s", group_name, sender, message);
         PrintToServer("[%s] \x04%s\x01：%s", group_name, sender, message);
+        SocketSend(socket, "ok", -1);
     }
     else if (msg_type == 1) {
-
+        // server_info
+        JSONObject serverInfo = ServerInfoEncode();
+        char encodedMsg[1024 * 20];
+        serverInfo.ToString(encodedMsg, sizeof(encodedMsg));
+        SocketSend(socket, encodedMsg, -1);
+        delete serverInfo;
     }
     else if (msg_type == 2) {
-        // token验证
-        char auth_token[LENGTH_TOKEN];
-        char token[LENGTH_TOKEN];
-        json_obj.GetString("auth_token", auth_token, sizeof(auth_token));
-        GetConVarString(g_MessageChannelTokenCvar, token, sizeof(token));
-        if (StrEqual(auth_token, token)) {
-            PrintToServer("[QQChat] 执行指令：%s", message);
-            ServerCommand("%s", message);
-        }
-        else {
-            PrintToServer("[QQChat] token验证失败，拒绝执行命令");
-        }
+        PrintToServer("[QQChat] 执行指令：%s", message);
+        ServerCommand("%s", message);
+        SocketSend(socket, "ok", -1);
     }
     delete json_obj;
-	SocketSend(socket, "ok", -1);
 }
 
 public Action OnSocketDisconnected(Handle socket, any arg) {
@@ -274,6 +281,34 @@ stock bool IsPlayer(int client) {
 
 stock bool IsValidClient(int client) {
     return client > 0 && client <= MaxClients && IsClientConnected(client) && IsClientInGame(client);
+}
+
+JSONObject ServerInfoEncode() {
+    JSONObject serverInfo = new JSONObject();
+    char cmap[LENGTH_NAME];
+    GetCurrentMap(cmap, sizeof(cmap));
+
+    serverInfo.SetString("current_map", cmap);
+    // player info
+    JSONArray playersInfo = new JSONArray();
+    for (int client_id = 0; client_id <= MaxClients; client_id++) {
+        if (!IsPlayer(client_id)) continue;
+        char player_name[LENGTH_NAME];
+        char player_steamid[LENGTH_NAME];
+        GetClientName(client_id, player_name, sizeof(player_name));
+        GetClientAuthId(client_id, AuthId_SteamID64, player_steamid, sizeof(player_steamid));
+        float latency = GetClientAvgLatency(client_id, NetFlow_Both);
+        int ping = RoundToNearest(latency * 500);
+        
+        JSONArray client_arr = new JSONArray();
+        client_arr.PushString(player_name);
+        client_arr.PushString(player_steamid);
+        client_arr.PushInt(ping);
+        playersInfo.Push(client_arr);
+    }
+
+    serverInfo.Set("players_info", playersInfo);
+    return serverInfo;
 }
 
 public Action OnClientSayCommand(int client, const char[] command, const char[] sArgs) {

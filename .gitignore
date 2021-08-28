@@ -150,3 +150,5 @@ compile.sh
 deploy.sh
 spcomp
 compiled/
+
+test.sh
