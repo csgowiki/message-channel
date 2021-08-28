@@ -13,8 +13,6 @@
 #pragma dynamic 131072
 
 #include <sourcemod>
-#include <sdkhooks>
-#include <cstrike>
 #include <ripext>
 #include <socket>
 
@@ -125,7 +123,7 @@ void BroadcastFromCSGO(int client, char[] name, char[] words, int msg_type=0) {
 
 void BroadcastFromCSGOCallback(HTTPResponse response, int client) {
     if (response.Status == HTTPStatus_OK) {
-        PrintToChat(client, " \x0D消息发送成功");
+        PrintToChat(client, " \x0A消息发送成功");
     }
     else if (response.Status == HTTPStatus_BadRequest) {
         JSONObject json_obj = view_as<JSONObject>(response.Data);
@@ -326,7 +324,6 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
         strcopy(words, sizeof(words), sArgs);
         StripQuotes(words);
         TrimString(words);
-        PrintToChat(client, "%s", words);
         BroadcastFromCSGO(client, name, words);
     }
     return Plugin_Continue;
