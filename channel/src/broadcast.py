@@ -26,13 +26,16 @@ async def valify_qq(msgPack: QQMessagePack) -> bool:
     return True
 
 async def decode_servers_info(servers_info: list) -> str:
-    msg = "====服务器列表===="
+    header = "====服务器列表====\n"
+    bodys = []
     for servers in servers_info:
-        msg += f"\n服务器编号：{servers['server_id']}\n"
+        msg = f"服务器编号：{servers['server_id']}\n"
         msg += f"服务器名称：{servers['remark']}\n"
         msg += f"当前地图：{servers['current_map']}\n"
-        msg += f"在线：{len(servers['players_info'])}人\n"
-    return msg
+        msg += f"在线：{len(servers['players_info'])}人"
+        bodys.append(msg)
+    bodys_ = '\n\n'.join(bodys)
+    return header + bodys_
 
 async def send_message_to_qq(msgPack: CSGOMessagePack, servers_info: list = []):
     if msgPack.message_type == 0:
