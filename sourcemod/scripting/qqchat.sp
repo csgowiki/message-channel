@@ -125,16 +125,16 @@ void BroadcastFromCSGO(int client, char[] name, char[] words, int msg_type=0) {
 
 void BroadcastFromCSGOCallback(HTTPResponse response, int client) {
     if (response.Status == HTTPStatus_OK) {
-        PrintToChat(client, "\x05消息发送成功");
+        PrintToChat(client, " \x0D消息发送成功");
     }
     else if (response.Status == HTTPStatus_BadRequest) {
         JSONObject json_obj = view_as<JSONObject>(response.Data);
         char detail[LENGTH_MESSAGE];
         json_obj.GetString("detail", detail, sizeof(detail));
-        PrintToChat(client, "\x02消息发送失败：%s\x01", detail);
+        PrintToChat(client, " \x02消息发送失败：%s\x01", detail);
     }
     else {
-        PrintToChat(client, "\x02消息发送失败：%d\x01", response.Status);
+        PrintToChat(client, " \x02消息发送失败：%d\x01", response.Status);
     }
 }
 
