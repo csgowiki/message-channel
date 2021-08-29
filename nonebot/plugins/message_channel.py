@@ -3,7 +3,10 @@ from aiocqhttp import message
 import requests
 import aiocqhttp
 from nonebot import get_bot, on_notice, NoticeSession, on_websocket_connect
-import config
+
+import sys
+sys.path.append('/var/lib/message-channel')
+import nonebot_config as config
 
 bot = get_bot()
 

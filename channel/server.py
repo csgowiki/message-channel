@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os, yaml
 from fastapi import FastAPI, HTTPException
+import uvicorn
 
 from src.register import register_method
 from src.logout import logout_method
@@ -9,8 +10,8 @@ from src.models import RegDataPack, TextResponse, JsonResponse, CSGOMessagePack,
 
 message_channel = FastAPI()
 
-if os.path.exists('config.yml'):
-    with open('config.yml', 'r', encoding='utf-8') as iFile:
+if os.path.exists('/var/lib/message-channel/core.yml'):
+    with open('/var/lib/message-channel/core.yml', 'r', encoding='utf-8') as iFile:
         config = yaml.safe_load(iFile)
 else:
     config = {
@@ -66,3 +67,6 @@ async def server_info(token: str, qq_group: int, server_id: int = -1):
         return {'message': 'send message success!', 'results': servers_info}
     except Exception as ept:
         raise HTTPException(status_code=400, detail=f"send message error: [{ept}]")
+
+if __name__ == '__main__':
+    uvicorn.run(message_channel, host="0.0.0.0", port=8000)
