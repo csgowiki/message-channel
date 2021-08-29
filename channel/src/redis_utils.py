@@ -27,7 +27,7 @@ def getValueFromKey(qq_key: int) -> Tuple[bool, RedisEntityList]:
 
 def setValueByKey(qq_key: int, value: RedisEntityList) -> bool:
     def cmp(ent: RedisEntity):
-        return (ent.sv_host, ent.sv_port)
+        return (ent['sv_host'], ent['sv_port'])
     contentList = value.dict()['content']
     contentList.sort(key=cmp)
     ret = gRedis.set(__construct_rediskey_from_intkey(qq_key), ujson.dumps(contentList))
