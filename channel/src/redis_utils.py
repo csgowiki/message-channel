@@ -26,7 +26,11 @@ def getValueFromKey(qq_key: int) -> Tuple[bool, RedisEntityList]:
     return True, RedisEntityList(**{'content': ujson.loads(redis_value)})
 
 def setValueByKey(qq_key: int, value: RedisEntityList) -> bool:
-    ret = gRedis.set(__construct_rediskey_from_intkey(qq_key), ujson.dumps(value.dict()['content']))
+    def cmp(ent: RedisEntity):
+        return (ent.sv_host, ent.sv_port)
+    contentList = value.dict()['content']
+    contentList.sort(key=cmp)
+    ret = gRedis.set(__construct_rediskey_from_intkey(qq_key), ujson.dumps(contentList))
     return ret
 
 def delKey(qq_key: int) -> bool:
