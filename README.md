@@ -12,7 +12,7 @@
 - [x] 可拓展的QQ插件，可以根据自己的需求更改
 - [x] 使用Redis持久化保存服务器注册数据
 
-更多的功能与使用方法见：[**csgowiki帮助中心**](https://docs.csgowiki.top/message-channel)
+更多的功能与使用方法见：[**csgowiki帮助中心**](https://docs.csgowiki.top/message-channel/index)
 
 ## Issue
 
