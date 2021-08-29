@@ -87,19 +87,29 @@ async def parseCommand(messages: aiocqhttp.message.Message) -> dict:
 async def poke(session: NoticeSession):
     if session.event.sub_type == 'poke' and session.event.target_id == bot_user_id:
         if not session.event.group_id: return
-        # group_info = bot.get_group_info(group_id=session.event.group_id)
-        # data = {
-        #     'qq_group': group_info['group_id'],
-        #     'qq_group_name': group_info['group_name'],
-        #     'server_id': -1,
-        #     'sender': 'None',
-        #     'message': '',
-        #     'message_type': 1
-        # }
-        # url = f'http://mc-core:8000/api/broadcast_from_qq?token={config.ACCESS_TOKEN}'
-        # resp = requests.post(url, data=data)
-        # if resp.status_code == 200:
-        #     await bot.send_group_msg 
+        group_info = bot.get_group_info(group_id=session.event.group_id)
+        data = {
+            'qq_group': group_info['group_id'],
+            'qq_group_name': group_info['group_name'],
+            'server_id': -1,
+            'sender': 'None',
+            'message': '',
+            'message_type': 1
+        }
+        url = f'http://mc-core:8000/api/broadcast_from_qq?token={config.MC_ACCESS_TOKEN}'
+        resp = requests.post(url, json=data, headers={"Content-Type": "application/json"})
+        if resp.status_code != 200:
+            if config.COMMAND_FAILED_NOTICE:
+            # 检查Bot是否是管理员或群主
+                botinfo = await bot.get_group_member_info(group_id=session.event.group_id, user_id=bot_user_id)
+                if botinfo['role'] in ['owner', 'admin']:
+                    await bot.send_private_msg(
+                        user_id=session.event.sender_id,
+                        group_id=session.event.group_id,
+                        message=message.MessageSegment.face(36) + f'消息发送出现错误：{resp.content.decode("utf-8")}'
+                    )
+                else:
+                    print(f'[ERROR] 消息发送出现异常，但是Bot不是QQ群管理员，无法私聊发送者报错内容：{resp.content.decode("utf-8")}')
 
 
 @bot.on_message('group')

@@ -58,7 +58,7 @@ async def broadcast_qq(msgPack: QQMessagePack, token: str):
         raise HTTPException(status_code=400, detail=f"send message error: [{ept}]")
 
 @message_channel.get("/api/server_info", response_model=JsonResponse)
-async def server_info(token: str, qq_group: int, server_id: int = -1):
+async def server_info(qq_group: int, token: str=config.get('access_token'), server_id: int=-1):
     try:
         await verify_token(token)
         _, servers_info = await get_server_info(qq_group, token, server_id)
