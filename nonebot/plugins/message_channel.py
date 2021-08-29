@@ -1,12 +1,15 @@
-import json
+import os
 from aiocqhttp import message
 import requests
 import aiocqhttp
-from nonebot import get_bot, on_notice, NoticeSession, on_websocket_connect
+from nonebot import default_config, get_bot, on_notice, NoticeSession, on_websocket_connect
 
 import sys
 sys.path.append('/var/lib/message-channel')
-import nonebot_config as config
+try:
+    import nonebot_config as config
+except:
+    import nonebot.default_config as config
 
 bot = get_bot()
 

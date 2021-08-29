@@ -1,0 +1,9 @@
+{
+    ".not": {
+        "message_type": "group",
+        "group_id": {
+            ".in": [
+            ]
+        }
+    }
+}
