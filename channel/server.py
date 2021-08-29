@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os, yaml
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
 from src.register import register_method
@@ -9,6 +10,14 @@ from src.broadcast import broadcast_from_csgo, broadcast_from_qq, get_server_inf
 from src.models import RegDataPack, TextResponse, JsonResponse, CSGOMessagePack, QQMessagePack
 
 message_channel = FastAPI()
+
+message_channel.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 if os.path.exists('/var/lib/message-channel/core.yml'):
     with open('/var/lib/message-channel/core.yml', 'r', encoding='utf-8') as iFile:
