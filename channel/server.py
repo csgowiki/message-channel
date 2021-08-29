@@ -9,6 +9,8 @@ from src.logout import logout_method
 from src.broadcast import broadcast_from_csgo, broadcast_from_qq, get_server_info
 from src.models import RegDataPack, TextResponse, JsonResponse, CSGOMessagePack, QQMessagePack
 
+config_dir = '/var/lib/message-channel'
+
 message_channel = FastAPI()
 
 message_channel.add_middleware(
@@ -19,7 +21,7 @@ message_channel.add_middleware(
     allow_headers=["*"],
 )
 
-if os.path.exists('/var/lib/message-channel/core.yml'):
+if os.path.exists(os.path.join(config_dir, 'core.yml')):
     with open('/var/lib/message-channel/core.yml', 'r', encoding='utf-8') as iFile:
         config = yaml.safe_load(iFile)
 else:
@@ -79,4 +81,15 @@ async def server_info(qq_group: int, server_id: int=-1):
         raise HTTPException(status_code=400, detail=f"send message error: [{ept}]")
 
 if __name__ == '__main__':
-    uvicorn.run(message_channel, host="0.0.0.0", port=8000)
+    keyfile_path = os.path.join(config_dir, 'private.key')
+    certfile_path = os.path.join(config_dir, 'fullchain.crt')
+    if os.path.exists(keyfile_path) and os.path.exists(certfile_path):
+        uvicorn.run(
+            message_channel,
+            host="0.0.0.0",
+            port=8000,
+            ssl_keyfile=keyfile_path,
+            ssl_certfile=certfile_path
+        )
+    else:
+        uvicorn.run(message_channel, host="0.0.0.0", port=8000)
