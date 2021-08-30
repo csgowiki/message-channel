@@ -36,7 +36,7 @@ public Plugin myinfo = {
 	name = "[CSGOWiki] QQChat",
 	author = "CarOL",
 	description = "Just Chat!",
-    version = "v0.1",
+    version = "v1.0-beta",
 	url = "https://docs.csgowiki.top/message-channel"
 }
 
