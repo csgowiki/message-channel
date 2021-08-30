@@ -57,9 +57,9 @@ async def send_message_to_csgo(msgPack: QQMessagePack, ent: RedisEntity, token: 
         _t = ent.dict()
         del _t['timestamp']
         _t['qq_group'] = msgPack.qq_group
-        try: logout_method(RegDataPack(**_t))
+        try: await logout_method(RegDataPack(**_t))
         except: pass
-        return HTTPException(status_code=400, detail=f"send message error: [{ent.sv_remark}] {ept}; auto removed")
+        return False, f"send message error: [{ent.sv_remark}] {ept}; auto removed"
     senddict = msgPack.dict()
     senddict['auth_token'] = token
     soc.send(ujson.dumps(senddict).encode('utf-8'))
