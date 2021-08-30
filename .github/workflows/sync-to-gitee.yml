@@ -29,6 +29,6 @@ jobs:
           # Gitee 仓库，例如 abersheeran/gitee-mirror
           repository: hx-w/message-channel
           # Gitee 用户名，用于登录。
-          username: ${{ GITEE_ACCOUNT }}
+          username: ${{ secrets.GITEE_ACCOUNT }}
           # Gitee 密码，用于登录。
-          password: ${{ GITEE_PASSWORD }}
+          password: ${{ secrets.GITEE_PASSWORD }}
