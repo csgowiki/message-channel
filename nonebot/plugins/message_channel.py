@@ -2,7 +2,7 @@ import os
 from aiocqhttp import message
 import requests
 import aiocqhttp
-from nonebot import default_config, get_bot, on_notice, NoticeSession, on_websocket_connect
+from nonebot import get_bot, on_notice, NoticeSession, on_websocket_connect
 
 import sys
 sys.path.append('/var/lib/message-channel')
@@ -11,14 +11,21 @@ try:
 except:
     import nonebot.default_config as config
 
+config_dir = '/var/lib/message-channel'
+message_channel_host = 'http://mc-core:8000'
+
 bot = get_bot()
 
 bot_user_id = 0 # Bot的QQ号，会自动获取
 
 @on_websocket_connect
 async def connect(event: aiocqhttp.Event):
-    global bot_user_id
+    global bot_user_id, message_channel_host
     bot_user_id =  (await bot.get_login_info())['user_id']
+    keyfile_path = os.path.join(config_dir, 'private.key')
+    certfile_path = os.path.join(config_dir, 'fullchain.crt')
+    if os.path.exists(keyfile_path) and os.path.exists(certfile_path):
+        message_channel_host = 'https://mc-core:8000'
 
 async def parseCommand(messages: aiocqhttp.message.Message) -> dict:
     '''
@@ -87,7 +94,7 @@ async def parseCommand(messages: aiocqhttp.message.Message) -> dict:
 async def poke(session: NoticeSession):
     if session.event.sub_type == 'poke' and session.event.target_id == bot_user_id:
         if not session.event.group_id: return
-        group_info = bot.get_group_info(group_id=session.event.group_id)
+        group_info = await bot.get_group_info(group_id=session.event.group_id)
         data = {
             'qq_group': group_info['group_id'],
             'qq_group_name': group_info['group_name'],
@@ -96,7 +103,7 @@ async def poke(session: NoticeSession):
             'message': '',
             'message_type': 1
         }
-        url = f'http://mc-core:8000/api/broadcast_from_qq?token={config.MC_ACCESS_TOKEN}'
+        url = f'{message_channel_host}/api/broadcast_from_qq?token={config.MC_ACCESS_TOKEN}'
         resp = requests.post(url, json=data, headers={"Content-Type": "application/json"})
         if resp.status_code != 200:
             if config.COMMAND_FAILED_NOTICE:
@@ -143,7 +150,7 @@ async def trigger(event: aiocqhttp.Event):
         'message_type': mc_command['command_type'],
         'message': mc_command['content']
     }
-    url = f'http://mc-core:8000/api/broadcast_from_qq?token={config.MC_ACCESS_TOKEN}'
+    url = f'{message_channel_host}/api/broadcast_from_qq?token={config.MC_ACCESS_TOKEN}'
     resp = requests.post(url, json=data, headers={"Content-Type": "application/json"})
 
     if resp.status_code == 200:
