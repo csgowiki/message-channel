@@ -2,8 +2,9 @@
 import socket
 import requests
 import ujson
-from src.models import CSGOMessagePack, QQMessagePack, RedisEntity
+from src.models import CSGOMessagePack, QQMessagePack, RedisEntity, RegDataPack
 from src.redis_utils import getValueFromKey
+from src.logout import logout_method
 from fastapi import HTTPException
 
 __GOCQHTTP_URL__ = "http://mc-gocq:9091"
@@ -49,7 +50,16 @@ async def send_message_to_qq(msgPack: CSGOMessagePack, servers_info: list = []):
 
 async def send_message_to_csgo(msgPack: QQMessagePack, ent: RedisEntity, token: str):
     soc = socket.socket() # TCP
-    soc.connect((ent.sv_host, ent.sv_port))
+    try:
+        soc.connect((ent.sv_host, ent.sv_port))
+    except Exception as ept:
+        # delete
+        _t = ent.dict()
+        del _t['timestamp']
+        _t['qq_group'] = msgPack.qq_group
+        try: logout_method(RegDataPack(**_t))
+        except: pass
+        return HTTPException(status_code=400, detail=f"send message error: [{ent.sv_remark}] {ept}; auto removed")
     senddict = msgPack.dict()
     senddict['auth_token'] = token
     soc.send(ujson.dumps(senddict).encode('utf-8'))
