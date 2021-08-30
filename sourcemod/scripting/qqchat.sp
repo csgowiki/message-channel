@@ -56,7 +56,7 @@ public void OnPluginStart() {
         MC_APICvar = CreateConVar("mc_api", "http://example.com:9090", "Set message channel api url");
         MC_ServerInfoCvar = CreateConVar("mc_server_info", "1", "Whether message channel can get players info or not");
         MC_AllowRemoteCmdCvar = CreateConVar("mc_allow_remote_cmd", "1", "Whether allow remote command exec in server or not");
-        MC_TokenCvar = CreateConVar("mc_token", "", "[access token] for message channel authentication. maxlength=64", FCVAR_PROTECTED | FCVAR_CHEAT);
+        MC_TokenCvar = CreateConVar("mc_token", "", "[access token] for message channel authentication. maxlength=64", FCVAR_PROTECTED);
 
         AutoExecConfig(true, "qqchat");
     }
