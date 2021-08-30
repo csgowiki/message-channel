@@ -104,7 +104,7 @@ async def poke(session: NoticeSession):
             'message_type': 1
         }
         url = f'{message_channel_host}/api/broadcast_from_qq?token={config.MC_ACCESS_TOKEN}'
-        resp = requests.post(url, json=data, headers={"Content-Type": "application/json"})
+        resp = requests.post(url, json=data, headers={"Content-Type": "application/json"}, verify=False)
         if resp.status_code != 200:
             if config.COMMAND_FAILED_NOTICE:
             # 检查Bot是否是管理员或群主
@@ -151,7 +151,7 @@ async def trigger(event: aiocqhttp.Event):
         'message': mc_command['content']
     }
     url = f'{message_channel_host}/api/broadcast_from_qq?token={config.MC_ACCESS_TOKEN}'
-    resp = requests.post(url, json=data, headers={"Content-Type": "application/json"})
+    resp = requests.post(url, json=data, headers={"Content-Type": "application/json"}, verify=False)
 
     if resp.status_code == 200:
         if mc_command['command_type'] == 2:
