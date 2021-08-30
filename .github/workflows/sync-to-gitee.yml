@@ -1,0 +1,34 @@
+# This is a basic workflow to help you get started with Actions
+
+name: sync-to-gitee
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ master, develop ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  sync:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: sync-gitee-mirror
+        uses: abersheeran/sync-gitee-mirror@v1-beta
+        with:
+          # Gitee 仓库，例如 abersheeran/gitee-mirror
+          repository: hx-w/message-channel
+          # Gitee 用户名，用于登录。
+          username: ${{ GITEE_ACCOUNT }}
+          # Gitee 密码，用于登录。
+          password: ${{ GITEE_PASSWORD }}
