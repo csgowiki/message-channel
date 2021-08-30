@@ -1,0 +1,5 @@
+# 鉴权token，限制64长度，请尽量复杂
+access_token: 123456
+
+# 是否公开服务器状态接口，及不需要token就可以查询服务器状态
+free_server_info: false

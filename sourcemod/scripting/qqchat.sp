@@ -22,13 +22,15 @@
 #define LENGTH_URL 128
 #define LENGTH_TOKEN 64
 
-ConVar g_QQChatHostCvar;
-ConVar g_QQChatPortCvar;
-ConVar g_QQChatRemarkCvar;
-ConVar g_QQChatQQGroupCvar;
-ConVar g_QQChatEnableQuickTriggerCvar;
-ConVar g_MessageChannelApiCvar;
-ConVar g_MessageChannelTokenCvar;
+ConVar MC_HostCvar;
+ConVar MC_PortCvar;
+ConVar MC_RemarkCvar;
+ConVar MC_QQGroupCvar;
+ConVar MC_QuickSendCvar;
+ConVar MC_APICvar;
+ConVar MC_TokenCvar;
+ConVar MC_ServerInfoCvar;
+ConVar MC_AllowRemoteCmdCvar;
 
 public Plugin myinfo = {
 	name = "[CSGOWiki] QQChat",
@@ -46,13 +48,15 @@ public void OnPluginStart() {
         if (serverHostCvar != INVALID_HANDLE) {
             GetConVarString(serverHostCvar, serverip, sizeof(serverip));
         }
-        g_QQChatHostCvar = CreateConVar("sm_qqchat_host", serverip, "[IP] or [Domain] of the current server");
-        g_QQChatPortCvar = CreateConVar("sm_qqchat_port", "54321", "[TCP port] of the current server using for message channel");
-        g_QQChatRemarkCvar = CreateConVar("sm_qqchat_remark", "unknown", "[Remark] of the current server, shown as [unknown] by default");
-        g_QQChatQQGroupCvar = CreateConVar("sm_qqchat_qqgroup", "", "[QQ Group] which current server is connected to");
-        g_QQChatEnableQuickTriggerCvar = CreateConVar("sm_qqchat_enable_trigger", "1", "Enable qqchat quick trigger or not");
-        g_MessageChannelApiCvar = CreateConVar("sm_message_channel_api", "http://example.com:9090", "Set message channel api url");
-        g_MessageChannelTokenCvar = CreateConVar("sm_message_channel_token", "", "[Access token] for message channel authentication. maxlength=64", FCVAR_PROTECTED);
+        MC_HostCvar = CreateConVar("mc_host", serverip, "[IP] or [Domain] of the current server");
+        MC_PortCvar = CreateConVar("mc_port", "54321", "[TCP port] of the current server using for message channel");
+        MC_RemarkCvar = CreateConVar("mc_remark", "unknown", "[Remark] of the current server, shown as [unknown] by default");
+        MC_QQGroupCvar = CreateConVar("mc_qqgroup", "", "[QQ Group] which current server is connected to");
+        MC_QuickSendCvar = CreateConVar("mc_quick_send", "0", "Enable qqchat quick trigger or not");
+        MC_APICvar = CreateConVar("mc_api", "http://example.com:9090", "Set message channel api url");
+        MC_ServerInfoCvar = CreateConVar("mc_server_info", "1", "Whether message channel can get players info or not");
+        MC_AllowRemoteCmdCvar = CreateConVar("mc_allow_remote_cmd", "1", "Whether allow remote command exec in server or not");
+        MC_TokenCvar = CreateConVar("mc_token", "", "[access token] for message channel authentication. maxlength=64", FCVAR_PROTECTED);
 
         AutoExecConfig(true, "qqchat");
     }
@@ -67,7 +71,7 @@ public void OnConfigsExecuted() {
     // init socket
     Handle hSocket = SocketCreate(SOCKET_TCP, OnSocketError);
     SocketSetOption(hSocket, SocketReuseAddr, 1);
-    SocketBind(hSocket, "0.0.0.0", GetConVarInt(g_QQChatPortCvar));
+    SocketBind(hSocket, "0.0.0.0", GetConVarInt(MC_PortCvar));
     SocketListen(hSocket, OnSocketIncoming);
     // register message channel
     RegisterOrLogoutMessageChannel(true);
@@ -206,7 +210,7 @@ public Action OnSocketReceive(Handle socket, char[] receiveData, const int dataS
     char auth_token[LENGTH_TOKEN];
     char token[LENGTH_TOKEN];
     json_obj.GetString("auth_token", auth_token, sizeof(auth_token));
-    GetConVarString(g_MessageChannelTokenCvar, token, sizeof(token));
+    GetConVarString(MC_TokenCvar, token, sizeof(token));
     if (!StrEqual(auth_token, token)) {
         PrintToServer("[QQChat] token验证失败");
         return;
@@ -228,15 +232,28 @@ public Action OnSocketReceive(Handle socket, char[] receiveData, const int dataS
     else if (msg_type == 1) {
         // server_info
         JSONObject serverInfo = ServerInfoEncode();
-        char encodedMsg[1024 * 20];
-        serverInfo.ToString(encodedMsg, sizeof(encodedMsg));
-        SocketSend(socket, encodedMsg, -1);
+        if (GetConVarBool(MC_ServerInfoCvar)) {
+            char encodedMsg[1024 * 20];
+            serverInfo.ToString(encodedMsg, sizeof(encodedMsg));
+            SocketSend(socket, encodedMsg, -1);
+        }
+        else {
+            char encodedMsg[128];
+            serverInfo.ToString(encodedMsg, sizeof(encodedMsg));
+            SocketSend(socket, encodedMsg, -1);
+        }
         delete serverInfo;
     }
     else if (msg_type == 2) {
-        PrintToServer("[QQChat] 执行指令：%s", message);
-        ServerCommand("%s", message);
-        SocketSend(socket, "ok", -1);
+        if (GetConVarBool(MC_AllowRemoteCmdCvar)) {
+            PrintToServer("[QQChat] 执行指令：%s", message);
+            ServerCommand("%s", message);
+            SocketSend(socket, "ok", -1);
+        }
+        else {
+            PrintToServer("[QQChat] 拒绝指令：%s", message);
+            SocketSend(socket, "forbidden", -1);
+        }
     }
     delete json_obj;
 }
@@ -248,8 +265,8 @@ public Action OnSocketDisconnected(Handle socket, any arg) {
 void FormatURL(char[] url, const char[] apiPath, bool withToken=true) {
     char token[LENGTH_TOKEN];
     char format[LENGTH_NAME];
-    GetConVarString(g_MessageChannelApiCvar, url, LENGTH_URL);
-    GetConVarString(g_MessageChannelTokenCvar, token, sizeof(token));
+    GetConVarString(MC_APICvar, url, LENGTH_URL);
+    GetConVarString(MC_TokenCvar, token, sizeof(token));
     if (url[strlen(url) - 1] == '/') {
         strcopy(format, sizeof(format), "%s%s");
     }
@@ -266,10 +283,10 @@ void FormatURL(char[] url, const char[] apiPath, bool withToken=true) {
 }
 
 void FetchConVarStrings(char[] svHost, int& svPort, char[] svRemark, int& qqgroup) {
-    GetConVarString(g_QQChatHostCvar, svHost, LENGTH_IP);
-    GetConVarString(g_QQChatRemarkCvar, svRemark, LENGTH_NAME);
-    svPort = GetConVarInt(g_QQChatPortCvar);
-    qqgroup = GetConVarInt(g_QQChatQQGroupCvar);
+    GetConVarString(MC_HostCvar, svHost, LENGTH_IP);
+    GetConVarString(MC_RemarkCvar, svRemark, LENGTH_NAME);
+    svPort = GetConVarInt(MC_PortCvar);
+    qqgroup = GetConVarInt(MC_QQGroupCvar);
 }
 
 // check player valid
@@ -289,22 +306,27 @@ JSONObject ServerInfoEncode() {
     serverInfo.SetString("current_map", cmap);
     // player info
     JSONArray playersInfo = new JSONArray();
-    for (int client_id = 0; client_id <= MaxClients; client_id++) {
-        if (!IsPlayer(client_id)) continue;
-        char player_name[LENGTH_NAME];
-        char player_steamid[LENGTH_NAME];
-        GetClientName(client_id, player_name, sizeof(player_name));
-        GetClientAuthId(client_id, AuthId_SteamID64, player_steamid, sizeof(player_steamid));
-        float latency = GetClientAvgLatency(client_id, NetFlow_Both);
-        int ping = RoundToNearest(latency * 500);
+    if (GetConVarBool(MC_ServerInfoCvar)) {
+        for (int client_id = 0; client_id <= MaxClients; client_id++) {
+            if (!IsPlayer(client_id)) continue;
+            char player_name[LENGTH_NAME];
+            char player_steamid[LENGTH_NAME];
+            GetClientName(client_id, player_name, sizeof(player_name));
+            GetClientAuthId(client_id, AuthId_SteamID64, player_steamid, sizeof(player_steamid));
+            float latency = GetClientAvgLatency(client_id, NetFlow_Both);
+            int ping = RoundToNearest(latency * 500);
         
-        JSONArray client_arr = new JSONArray();
-        client_arr.PushString(player_name);
-        client_arr.PushString(player_steamid);
-        client_arr.PushInt(ping);
-        playersInfo.Push(client_arr);
+            JSONArray client_arr = new JSONArray();
+            client_arr.PushString(player_name);
+            client_arr.PushString(player_steamid);
+            client_arr.PushInt(ping);
+            playersInfo.Push(client_arr);
+        }
+        serverInfo.SetInt("players_num", playersInfo.Length);
     }
-
+    else {
+        serverInfo.SetInt("players_num", GetClientCount());
+    }
     serverInfo.Set("players_info", playersInfo);
     return serverInfo;
 }
@@ -313,7 +335,7 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
     if (!IsPlayer(client)) {
         return Plugin_Continue;
     }
-    if (GetConVarBool(g_QQChatEnableQuickTriggerCvar)) {
+    if (GetConVarBool(MC_QuickSendCvar)) {
         if (strlen(sArgs) <= 0 || sArgs[0] == '!' || sArgs[0] == '.' || sArgs[0] == '/') {
             return Plugin_Continue;
         }
