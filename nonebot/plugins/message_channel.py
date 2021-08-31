@@ -129,11 +129,13 @@ async def trigger(event: aiocqhttp.Event):
         return
     # 执行 权限
     if mc_command['command_type'] == 2 and event.sender['user_id'] not in config.SUPERUSERS:
-        await bot.send_group_msg(
-            group_id=event.group_id,
-            message=message.MessageSegment.reply(event.message_id) + "你没有权限使用该指令" + message.MessageSegment.face(28)
-        )
-        return
+        # STAFFS ?
+        if mc_command['server_id'] not in config.STAFFS.get(str(event.sender['user_id'])):
+            await bot.send_group_msg(
+                group_id=event.group_id,
+                message=message.MessageSegment.reply(event.message_id) + "你没有权限使用该指令" + message.MessageSegment.face(28)
+            )
+            return
     # 执行 内容
     if mc_command['command_type'] == 2 and len(mc_command['content'].strip()) == 0:
         await bot.send_group_msg(
