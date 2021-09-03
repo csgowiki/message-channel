@@ -88,11 +88,11 @@ async def broadcast_from_csgo(msgPack: CSGOMessagePack, token: str):
     await send_message_to_qq(msgPack)
     # to other csgo-server
     failed_server_list = []
-    _, entList = getValueFromKey(msgPack.qq_group)
-    for ent in entList.content:
-        if (ent.sv_host, ent.sv_port) != (msgPack.sv_host, msgPack.sv_port):
-            if not (await send_message_to_csgo(msgPack, token))[0]:
-                failed_server_list.append(ent.sv_remark)
+    # _, entList = getValueFromKey(msgPack.qq_group)
+    # for ent in entList.content:
+    #     if (ent.sv_host, ent.sv_port) != (msgPack.sv_host, msgPack.sv_port):
+    #         if not (await send_message_to_csgo(msgPack, token))[0]:
+    #             failed_server_list.append(ent.sv_remark)
     
     if len(failed_server_list) != 0:
         raise HTTPException(status_code=401, detail=f"those server may not recieve message: {str(failed_server_list)}")
