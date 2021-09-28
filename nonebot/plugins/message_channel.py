@@ -145,12 +145,13 @@ async def trigger(event: aiocqhttp.Event):
             message=message.MessageSegment.reply(event.message_id) + "执行内容不能为空"
         )
     group_info = await bot.get_group_info(group_id=event.group_id)
-    print(event)
+    sender_name = event.sender['nickname']
+    if len(event.sender['card']) != 0:
+        sender_name = event.sender['card']
     data = {
         'qq_group': group_info['group_id'],
         'qq_group_name': group_info['group_name'],
-        # 'sender': event.sender['nickname'],
-        'sender': event.sender['card'],
+        'sender': sender_name,
         'server_id': mc_command['server_id'],
         'message_type': mc_command['command_type'],
         'message': mc_command['content']
