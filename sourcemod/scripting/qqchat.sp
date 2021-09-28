@@ -31,6 +31,7 @@ ConVar MC_APICvar;
 ConVar MC_TokenCvar;
 ConVar MC_ServerInfoCvar;
 ConVar MC_AllowRemoteCmdCvar;
+ConVar MC_ShowFeedbackCvar;
 
 public Plugin myinfo = {
 	name = "[CSGOWiki] QQChat",
@@ -57,6 +58,7 @@ public void OnPluginStart() {
         MC_ServerInfoCvar = CreateConVar("mc_server_info", "1", "Whether message channel can get players info or not");
         MC_AllowRemoteCmdCvar = CreateConVar("mc_allow_remote_cmd", "1", "Whether allow remote command exec in server or not");
         MC_TokenCvar = CreateConVar("mc_token", "", "[access token] for message channel authentication. maxlength=64", FCVAR_PROTECTED);
+        MC_ShowFeedbackCvar = CreateConVar("mc_show_feedback", "1", "set 0 to disable feedback in chat when message send successfully");
 
         AutoExecConfig(true, "qqchat");
     }
@@ -127,7 +129,9 @@ void BroadcastFromCSGO(int client, char[] name, char[] words, int msg_type=0) {
 
 void BroadcastFromCSGOCallback(HTTPResponse response, int client) {
     if (response.Status == HTTPStatus_OK) {
-        PrintToChat(client, " \x0A消息发送成功");
+        if (GetConVarBool(MC_ShowFeedbackCvar)) {
+            PrintToChat(client, " \x0A消息发送成功");
+        }
     }
     else if (response.Status == HTTPStatus_BadRequest) {
         JSONObject json_obj = view_as<JSONObject>(response.Data);
