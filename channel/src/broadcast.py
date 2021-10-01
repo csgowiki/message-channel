@@ -40,7 +40,10 @@ async def decode_servers_info(servers_info: list) -> str:
         msg = f"服务器编号：{servers['server_id']}\n"
         msg += f"服务器名称：{servers['remark']}\n"
         msg += f"当前地图：{servers['current_map']}\n"
-        msg += f"在线：{len(servers['players_info'])}人"
+        msg += f"在线：{servers['players_num']}人"
+        if servers['players_num'] > 0 and servers['players_num'] == len(servers['players_info']):
+            name_list = list(x['player_name'] for x in servers['players_info'])
+            msg += f"\n{name_list}"
         bodys.append(msg)
     bodys_ = '\n\n'.join(bodys)
     print(servers_info)
