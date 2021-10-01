@@ -131,7 +131,7 @@ async def trigger(event: aiocqhttp.Event):
     if mc_command['command_type'] == 2 and event.sender['user_id'] not in config.SUPERUSERS:
         # STAFFS ?
         auth_server = config.STAFFS.get(str(event.sender['user_id']))
-        if isinstance(auth_server, list) and mc_command['server_id'] not in auth_server:
+        if (not auth_server) or (isinstance(auth_server, list) and mc_command['server_id'] not in auth_server):
             await bot.send_group_msg(
                 group_id=event.group_id,
                 message=message.MessageSegment.reply(event.message_id) + "你没有权限使用该指令" + message.MessageSegment.face(28)
