@@ -85,10 +85,10 @@ async def send_message_to_csgo(msgPack: QQMessagePack, ent: RedisEntity, token: 
             jsonret = ujson.loads(ret.strip())
             player_len = len(jsonret['players_info'])
             for idx in range(player_len):
-                jsonret['players_info'][idx] = zip(
+                jsonret['players_info'][idx] = dict(zip(
                     ['player_name', 'steamid', 'ping'],
                     jsonret['players_info'][idx]
-                )
+                ))
             return True, jsonret
         except Exception as ept:
             print(f'[Error] send_message_to_csgo: {ept}')
