@@ -16,16 +16,18 @@ message_channel_host = 'http://mc-core:8000'
 
 bot = get_bot()
 
-bot_user_id = 0 # Bot的QQ号，会自动获取
+bot_user_id = 0  # Bot的QQ号，会自动获取
+
 
 @on_websocket_connect
 async def connect(event: aiocqhttp.Event):
     global bot_user_id, message_channel_host
-    bot_user_id =  (await bot.get_login_info())['user_id']
+    bot_user_id = (await bot.get_login_info())['user_id']
     keyfile_path = os.path.join(config_dir, 'private.key')
     certfile_path = os.path.join(config_dir, 'fullchain.crt')
     if os.path.exists(keyfile_path) and os.path.exists(certfile_path):
         message_channel_host = 'https://mc-core:8000'
+
 
 async def parseCommand(messages: aiocqhttp.message.Message) -> dict:
     '''
@@ -43,12 +45,13 @@ async def parseCommand(messages: aiocqhttp.message.Message) -> dict:
     if len(config.COMMAND_TRIGGER) != 0 and messages[0]['data']['text'][0] not in config.COMMAND_TRIGGER:
         return retjson
     if len(config.COMMAND_TRIGGER) != 0:
-        messages[0]['data']['text'] = messages[0]['data']['text'][1:]  # trim 1st char
+        # trim 1st char
+        messages[0]['data']['text'] = messages[0]['data']['text'][1:]
     # --- parse server id ---
     firstMessages = messages[0]['data']['text'].split(' ')
     if len(firstMessages) <= 1:
         return retjson
-    if len(firstMessages[0]) == 0: # 未指定server id
+    if len(firstMessages[0]) == 0:  # 未指定server id
         retjson['server_id'] = -1
     else:
         retjson['server_id'] = int(firstMessages[0])
@@ -76,7 +79,7 @@ async def parseCommand(messages: aiocqhttp.message.Message) -> dict:
     retjson['content'] = ''
     if idx < len(firstMessages):
         retjson['content'] = ' '.join(firstMessages[idx:])
-    
+
     for msg in messages[1:]:
         if msg['type'] == 'image':
             retjson['content'] += '[图片]'
@@ -90,10 +93,12 @@ async def parseCommand(messages: aiocqhttp.message.Message) -> dict:
     retjson['success'] = True
     return retjson
 
+
 @on_notice('notify')
 async def poke(session: NoticeSession):
     if session.event.sub_type == 'poke' and session.event.target_id == bot_user_id:
-        if not session.event.group_id: return
+        if not session.event.group_id:
+            return
         group_info = await bot.get_group_info(group_id=session.event.group_id)
         data = {
             'qq_group': group_info['group_id'],
@@ -104,26 +109,30 @@ async def poke(session: NoticeSession):
             'message_type': 1
         }
         url = f'{message_channel_host}/api/broadcast_from_qq?token={config.MC_ACCESS_TOKEN}'
-        resp = requests.post(url, json=data, headers={"Content-Type": "application/json"}, verify=False)
+        resp = requests.post(url, json=data, headers={
+                             "Content-Type": "application/json"}, verify=False)
         if resp.status_code != 200:
             if config.COMMAND_FAILED_NOTICE:
-            # 检查Bot是否是管理员或群主
+                # 检查Bot是否是管理员或群主
                 botinfo = await bot.get_group_member_info(group_id=session.event.group_id, user_id=bot_user_id)
                 if botinfo['role'] in ['owner', 'admin']:
                     await bot.send_private_msg(
                         user_id=session.event.sender_id,
                         group_id=session.event.group_id,
-                        message=message.MessageSegment.face(36) + f'消息发送出现错误：{resp.content.decode("utf-8")}'
+                        message=message.MessageSegment.face(
+                            36) + f'消息发送出现错误：{resp.content.decode("utf-8")}'
                     )
                 else:
-                    print(f'[ERROR] 消息发送出现异常，但是Bot不是QQ群管理员，无法私聊发送者报错内容：{resp.content.decode("utf-8")}')
+                    print(
+                        f'[ERROR] 消息发送出现异常，但是Bot不是QQ群管理员，无法私聊发送者报错内容：{resp.content.decode("utf-8")}')
 
 
 @bot.on_message('group')
 async def trigger(event: aiocqhttp.Event):
     try:
         mc_command = await parseCommand(event.message)
-        if not mc_command['success']: return
+        if not mc_command['success']:
+            return
     except Exception as ept:
         print(f'[Error] {ept}')
         return
@@ -134,7 +143,8 @@ async def trigger(event: aiocqhttp.Event):
         if (not auth_server) or (isinstance(auth_server, list) and mc_command['server_id'] not in auth_server):
             await bot.send_group_msg(
                 group_id=event.group_id,
-                message=message.MessageSegment.reply(event.message_id) + "你没有权限使用该指令" + message.MessageSegment.face(28)
+                message=message.MessageSegment.reply(
+                    event.message_id) + "你没有权限使用该指令" + message.MessageSegment.face(28)
             )
             return
     # 执行 内容
@@ -157,13 +167,15 @@ async def trigger(event: aiocqhttp.Event):
         'message': mc_command['content']
     }
     url = f'{message_channel_host}/api/broadcast_from_qq?token={config.MC_ACCESS_TOKEN}'
-    resp = requests.post(url, json=data, headers={"Content-Type": "application/json"}, verify=False)
+    resp = requests.post(url, json=data, headers={
+                         "Content-Type": "application/json"}, verify=False)
 
     if resp.status_code == 200:
         if mc_command['command_type'] == 2:
             await bot.send_group_msg(
                 group_id=event.group_id,
-                message=message.MessageSegment.reply(event.message_id) + '命令已发送至目标服务器执行'
+                message=message.MessageSegment.reply(
+                    event.message_id) + '命令已发送至目标服务器执行'
             )
     else:
         if config.COMMAND_FAILED_NOTICE:
@@ -173,9 +185,9 @@ async def trigger(event: aiocqhttp.Event):
                 await bot.send_private_msg(
                     user_id=event.sender['user_id'],
                     group_id=event.group_id,
-                    message=message.MessageSegment.face(36) + f'消息发送出现错误：{resp.content.decode("utf-8")}'
+                    message=message.MessageSegment.face(
+                        36) + f'消息发送出现错误：{resp.content.decode("utf-8")}'
                 )
             else:
-                print(f'[ERROR] 消息发送出现异常，但是Bot不是QQ群管理员，无法私聊发送者报错内容：{resp.content.decode("utf-8")}')
-
-
+                print(
+                    f'[ERROR] 消息发送出现异常，但是Bot不是QQ群管理员，无法私聊发送者报错内容：{resp.content.decode("utf-8")}')
