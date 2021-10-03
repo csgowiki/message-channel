@@ -46,7 +46,6 @@ async def decode_servers_info(servers_info: list) -> str:
             msg += f"\n{name_list}"
         bodys.append(msg)
     bodys_ = '\n\n'.join(bodys)
-    print(servers_info)
     return header + bodys_
 
 
